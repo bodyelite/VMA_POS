@@ -3,578 +3,175 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VMA - POS Profesional</title>
+    <title>VMA - POS Profesional Conectado</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        
-        :root {
-            --bg-app: #f4f6f8;
-            --bg-panel: #ffffff;
-            --text-dark: #111827;
-            --text-muted: #6b7280;
-            --border: #e5e7eb;
-            --primary: #0f172a;
-            --primary-hover: #334155;
-            --accent: #2563eb;
-            --success: #10b981;
-            --danger: #ef4444;
-        }
-
+        :root { --bg-app: #f4f6f8; --bg-panel: #ffffff; --text-dark: #111827; --text-muted: #6b7280; --border: #e5e7eb; --primary: #0f172a; --accent: #2563eb; --success: #10b981; --danger: #ef4444; }
         body { font-family: 'Inter', sans-serif; background-color: var(--bg-app); margin: 0; padding: 0; color: var(--text-dark); height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
-        
-        /* Navbar Superior */
         .navbar { background: var(--bg-panel); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); box-shadow: 0 1px 2px rgba(0,0,0,0.02); z-index: 10; }
-        .brand { font-size: 20px; font-weight: 800; letter-spacing: -0.5px; display: flex; align-items: center; gap: 10px; }
+        .brand { font-size: 20px; font-weight: 800; display: flex; align-items: center; gap: 10px; }
         .status-dot { width: 8px; height: 8px; background-color: var(--success); border-radius: 50%; box-shadow: 0 0 6px var(--success); }
-        .nav-info { font-size: 13px; font-weight: 500; color: var(--text-muted); }
-
-        /* Contenedor Principal */
         .main-workspace { display: flex; flex: 1; overflow: hidden; }
-        
-        /* Panel Izquierdo (Operaciones) */
         .left-panel { flex: 1; padding: 30px; overflow-y: auto; display: flex; flex-direction: column; gap: 25px; }
-        
         .section-box { background: var(--bg-panel); border-radius: 12px; padding: 25px; border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
         .section-header { font-size: 13px; text-transform: uppercase; font-weight: 700; color: var(--text-muted); letter-spacing: 0.5px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
-        .section-header::after { content: ""; flex: 1; height: 1px; background: var(--border); }
-
-        /* Formularios */
         .form-row { display: flex; gap: 20px; margin-bottom: 16px; }
         .form-group { flex: 1; position: relative; }
         label { display: block; margin-bottom: 6px; font-size: 12px; font-weight: 600; color: var(--text-muted); }
-        input, select { width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; background: #fafafa; color: var(--text-dark); box-sizing: border-box; transition: all 0.2s; font-family: 'Inter', sans-serif; }
-        input:focus, select:focus { outline: none; border-color: var(--accent); background: #fff; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
-        input:disabled, select:disabled { background: var(--bg-app); color: #9ca3af; cursor: not-allowed; }
-
-        /* Autocomplete Buscador */
-        .autocomplete-results { position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid var(--border); border-radius: 8px; margin-top: 4px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); z-index: 50; max-height: 200px; overflow-y: auto; display: none; }
+        input, select { width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; background: #fafafa; box-sizing: border-box; }
+        .autocomplete-results { position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid var(--border); border-radius: 8px; margin-top: 4px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); z-index: 50; display: none; }
         .ac-item { padding: 12px 15px; cursor: pointer; border-bottom: 1px solid #f3f4f6; display: flex; flex-direction: column; }
-        .ac-item:last-child { border-bottom: none; }
-        .ac-item:hover { background: #f8fafc; }
-        .ac-name { font-weight: 600; font-size: 14px; }
-        .ac-phone { font-size: 12px; color: var(--text-muted); }
-
-        /* Botones */
-        button { cursor: pointer; border: none; font-weight: 600; border-radius: 8px; font-family: 'Inter', sans-serif; transition: all 0.2s; }
-        .btn-add { background: var(--primary); color: #fff; padding: 12px; width: 100%; font-size: 14px; margin-top: 10px; }
-        .btn-add:hover:not(:disabled) { background: var(--primary-hover); }
-        .btn-add:disabled { background: var(--border); color: var(--text-muted); cursor: not-allowed; }
-        
-        /* Panel Derecho (Ticket de Venta) */
-        .right-panel { width: 400px; background: var(--bg-panel); border-left: 1px solid var(--border); display: flex; flex-direction: column; z-index: 5; box-shadow: -4px 0 15px rgba(0,0,0,0.02); }
+        .right-panel { width: 400px; background: var(--bg-panel); border-left: 1px solid var(--border); display: flex; flex-direction: column; }
         .ticket-header { padding: 25px 30px; border-bottom: 1px solid var(--border); background: #f8fafc; }
-        .ticket-title { font-size: 18px; font-weight: 700; color: var(--primary); }
-        .ticket-folio { font-size: 13px; color: var(--text-muted); font-weight: 500; margin-top: 4px; }
-        
         .ticket-body { flex: 1; overflow-y: auto; padding: 0 30px; }
-        .cart-item { padding: 20px 0; border-bottom: 1px dashed var(--border); display: flex; justify-content: space-between; align-items: flex-start; }
-        .cart-item-info { flex: 1; }
-        .cart-item-title { font-weight: 600; font-size: 14px; margin-bottom: 4px; }
-        .cart-item-meta { font-size: 12px; color: var(--text-muted); }
-        .cart-item-price { font-weight: 700; font-size: 14px; text-align: right; }
-        .btn-remove { color: var(--danger); background: none; border: none; font-size: 11px; padding: 0; margin-top: 8px; text-decoration: underline; cursor: pointer; }
-
-        .ticket-footer { padding: 25px 30px; border-top: 1px solid var(--border); background: #fff; }
-        .total-row { display: flex; justify-content: space-between; align-items: center; font-size: 20px; font-weight: 800; margin-bottom: 20px; }
-        .btn-pay { background: var(--success); color: #fff; padding: 18px; width: 100%; font-size: 16px; border-radius: 12px; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2); }
-        .btn-pay:hover { background: #0ea5e9; transform: translateY(-1px); box-shadow: 0 6px 15px rgba(14, 165, 233, 0.3); }
-
-        .stock-indicator { display: inline-block; font-size: 12px; font-weight: 600; color: var(--accent); background: #eff6ff; padding: 4px 10px; border-radius: 6px; margin-top: 10px; display: none; }
-        .empty-cart { text-align: center; color: var(--text-muted); padding: 50px 0; font-size: 14px; }
-
-        /* Modales */
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); display: none; justify-content: center; align-items: center; z-index: 1000; }
-        .modal-content { background: var(--bg-panel); padding: 40px; border-radius: 16px; width: 450px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); }
-        .modal-title { font-size: 22px; font-weight: 800; margin-bottom: 25px; text-align: center; color: var(--primary); }
-        .modal-total-display { font-size: 36px; font-weight: 800; text-align: center; margin-bottom: 30px; color: var(--text-dark); }
-        .btn-confirm { background: var(--primary); color: white; padding: 16px; width: 100%; font-size: 15px; border-radius: 10px; margin-top: 10px; }
-        .btn-cancel { background: transparent; border: 1px solid var(--border); color: var(--text-dark); padding: 12px; width: 100%; font-size: 14px; border-radius: 10px; margin-top: 10px; }
+        .cart-item { padding: 20px 0; border-bottom: 1px dashed var(--border); display: flex; justify-content: space-between; }
+        .total-row { display: flex; justify-content: space-between; align-items: center; font-size: 20px; font-weight: 800; padding: 25px 30px; }
+        .btn-pay { background: var(--success); color: #fff; padding: 18px; width: 100%; font-size: 16px; border: none; cursor: pointer; border-radius: 12px; }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); display: none; justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background: #fff; padding: 40px; border-radius: 16px; width: 450px; }
     </style>
 </head>
 <body>
 
     <div class="navbar">
         <div class="brand"><span class="status-dot"></span> VMA STORE</div>
-        <div class="nav-info" id="fecha_actual">--/--/----</div>
+        <div id="fecha_actual" class="nav-info"></div>
     </div>
 
     <div class="main-workspace">
-        
         <div class="left-panel">
-            
             <div class="section-box">
-                <div class="section-header">Identificación de Cliente</div>
-                
-                <div class="form-group" style="margin-bottom: 16px;">
-                    <label>Buscador Inteligente (Nombre o Celular)</label>
-                    <input type="text" id="buscador_global" placeholder="Escribe para buscar..." autocomplete="off">
+                <div class="section-header">Cliente</div>
+                <div class="form-group">
+                    <input type="text" id="buscador_global" placeholder="Buscar por nombre o celular..." autocomplete="off">
                     <div id="autocomplete_box" class="autocomplete-results"></div>
                 </div>
-
-                <div class="form-row" style="margin-bottom: 0;">
-                    <div class="form-group">
-                        <label>Nombre en Boleta</label>
-                        <input type="text" id="cli_nombre" placeholder="Nombre completo">
-                    </div>
-                    <div class="form-group">
-                        <label>Celular / ID</label>
-                        <input type="text" id="cli_telefono" placeholder="+569...">
-                    </div>
+                <div class="form-row">
+                    <div class="form-group"><input type="text" id="cli_nombre" placeholder="Nombre"></div>
+                    <div class="form-group"><input type="text" id="cli_telefono" placeholder="Celular"></div>
                 </div>
             </div>
 
             <div class="section-box">
-                <div class="section-header">Agregar Artículos</div>
-                
+                <div class="section-header">Artículos</div>
                 <div class="form-row">
                     <div class="form-group">
                         <label>Colegio</label>
-                        <select id="sel_colegio" onchange="filtrarCategorias()">
-                            <option value="">Seleccione...</option>
-                        </select>
+                        <select id="sel_colegio" onchange="actualizarInterfaz()"><option value="">Seleccione...</option></select>
                     </div>
                     <div class="form-group">
                         <label>Género</label>
-                        <select id="sel_genero" onchange="filtrarPrendas()" disabled>
-                            <option value="">Seleccione...</option>
-                            <option value="Niña">Niña</option>
-                            <option value="Niño">Niño</option>
-                            <option value="Unisex">Unisex</option>
-                        </select>
+                        <select id="sel_genero" onchange="actualizarInterfaz()"><option value="">Seleccione...</option><option>Niña</option><option>Niño</option><option>Unisex</option></select>
                     </div>
                 </div>
-                
-                <div class="form-group" style="margin-bottom: 16px;">
+                <div class="form-group">
                     <label>Prenda</label>
-                    <select id="sel_prenda" onchange="filtrarTallas()" disabled>
-                        <option value="">Primero seleccione filtros...</option>
-                    </select>
+                    <select id="sel_prenda" onchange="actualizarInterfaz()"></select>
                 </div>
-                
-                <div class="form-row" style="margin-bottom: 0;">
-                    <div class="form-group">
-                        <label>Talla</label>
-                        <select id="sel_talla" onchange="mostrarStock()" disabled>
-                            <option value="">...</option>
-                        </select>
-                    </div>
-                    <div class="form-group" style="flex: 0.5;">
-                        <label>Cantidad</label>
-                        <input type="number" id="sel_cantidad" value="1" min="1">
-                    </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Talla</label><select id="sel_talla" onchange="actualizarInterfaz()"></select></div>
+                    <div class="form-group"><label>Cant.</label><input type="number" id="sel_cantidad" value="1" min="1"></div>
                 </div>
-
-                <div id="info_stock" class="stock-indicator"></div>
-                <button class="btn-add" id="btn_añadir" onclick="agregarAlCarrito()" disabled>Añadir al Ticket de Venta</button>
+                <button class="btn-pay" style="background:var(--primary); margin-top:20px;" onclick="agregarAlCarrito()">Añadir a la Orden</button>
             </div>
         </div>
 
         <div class="right-panel">
-            <div class="ticket-header">
-                <div class="ticket-title">Orden de Compra</div>
-                <div class="ticket-folio">Folio #<span id="folio_nota">1001</span></div>
-            </div>
-            
-            <div class="ticket-body" id="cuerpo_nota">
-                <div class="empty-cart">El ticket está vacío.<br>Selecciona artículos para comenzar.</div>
-            </div>
-            
-            <div class="ticket-footer">
-                <div class="total-row">
-                    <span>Total</span>
-                    <span id="total_venta">$0</span>
-                </div>
-                <button class="btn-pay" onclick="abrirPago()">Cobrar Orden</button>
-            </div>
+            <div class="ticket-header"><div class="ticket-title">Resumen de Venta</div></div>
+            <div class="ticket-body" id="cuerpo_nota"></div>
+            <div class="total-row"><span>Total</span><span id="total_venta">$0</span></div>
+            <div style="padding: 0 30px 30px;"><button class="btn-pay" onclick="abrirPago()">Cobrar</button></div>
         </div>
-
     </div>
 
     <div id="modal_pago" class="modal-overlay">
         <div class="modal-content">
-            <div class="modal-title">Finalizar Transacción</div>
-            <div class="modal-total-display" id="modal_total_texto">$0</div>
-
-            <div class="form-group" style="margin-bottom: 20px;">
-                <label>Vendedor en Turno (Obligatorio)</label>
-                <select id="modal_vendedor" style="border-color: var(--accent); background: #eff6ff;">
-                    <option value="">-- Selecciona tu nombre --</option>
-                    <option value="Juan Carlos Contreras">Juan Carlos Contreras</option>
-                    <option value="Valentina Contreras">Valentina Contreras</option>
-                    <option value="Recepción General">Recepción General</option>
-                </select>
+            <h2 id="modal_total_texto" style="text-align:center;"></h2>
+            <div class="form-group">
+                <label>Vendedor</label>
+                <select id="modal_vendedor"><option>Juan Carlos Contreras</option><option>Valentina Contreras</option></select>
             </div>
-            
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Medio de Pago</label>
-                    <select id="modal_forma_pago">
-                        <option value="Transbank">Tarjeta (Transbank)</option>
-                        <option value="Efectivo">Efectivo</option>
-                        <option value="Transferencia">Transferencia</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Entrega</label>
-                    <select id="modal_entrega">
-                        <option value="Sala">Retiro en Sala</option>
-                        <option value="Pendiente">Despacho / Pendiente</option>
-                    </select>
-                </div>
-            </div>
-
-            <button class="btn-confirm" onclick="procesarVenta()">Registrar y Descontar Stock</button>
-            <button class="btn-cancel" onclick="cerrarPago()">Cancelar</button>
-        </div>
-    </div>
-
-    <div id="modal_exito" class="modal-overlay">
-        <div class="modal-content" style="text-align: center;">
-            <div style="width: 60px; height: 60px; background: #d1fae5; color: #10b981; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; margin: 0 auto 20px;">✓</div>
-            <div class="modal-title" style="margin-bottom: 10px;">Venta Exitosa</div>
-            <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 30px;" id="msg_exito_vendedor"></p>
-            
-            <button class="btn-confirm" style="background: var(--success); margin-bottom: 10px;" onclick="window.print()">Imprimir Ticket</button>
-            <button class="btn-cancel" onclick="nuevaVenta()">Nueva Venta</button>
+            <button class="btn-pay" onclick="procesarVenta()">Confirmar y Guardar</button>
+            <button onclick="cerrarPago()" style="width:100%; background:none; border:none; margin-top:10px; cursor:pointer; color:var(--text-muted);">Cancelar</button>
         </div>
     </div>
 
 <script>
-    document.getElementById('fecha_actual').innerText = new Date().toLocaleDateString('es-CL', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-
-    // BASES DE DATOS DE CLIENTES
-    const clientesDB = [
-        { id: "+56955145504", nombre: "Valentina Contreras", dir: "La Florida 123" },
-        { id: "+56983300262", nombre: "Recepción Body Elite", dir: "Providencia 456" },
-        { id: "+56937648536", nombre: "Juan Carlos Contreras", dir: "Geronimo 208" },
-        { id: "+56911223344", nombre: "Juan Perez", dir: "Las Condes" }
-    ];
-
-    // PROCESAMIENTO DE TEXTO A BASE DE DATOS DE PRODUCTOS
-    const datosRaw = `
-COLEGIO	PRENDA	 T3 	 T4 	 T6 	 T8 	 T10 	 T12 	 T14 	 T16 	 S/M/L/xl 	 2XL 
-DUNALASTAIR	CALZA CORTA	 11000 	 11000 	 11000 	 12000 	 12000 	 13000 	 13000 	 13000 	 14000 	
-DUNALASTAIR	CALCETA RUGBY				 8000 	 8000 					
-DUNALASTAIR	DELANTAL O COTONA	 15000 	 15000 	 15000 	 16000 	 16000 	 NO 	 NO 	 NO 		
-DUNALASTAIR	JOCKEY	 8000 	 8000 	 8000 	 8000 	 8000 	 8000 	 8000 	 8000 	 8000 	 8000 
-DUNALASTAIR	PANTALON DE BUZO	 16000 	 16000 	 16000 	 18000 	 18000 	 20000 	 20000 	 20000 	 21000 	 23000 
-DUNALASTAIR	POLERON	 18000 	 18000 	 18000 	 19000 	 19000 	 21000 	 21000 	 21000 	 22000 	 24000 
-DUNALASTAIR	POLERA CUELLO PIQUE M/CORTA	 15000 	 15000 	 15000 	 16000 	 16000 	 17000 	 17000 	 17000 	 19000 	 21000 
-DUNALASTAIR	POLERA CUELLO PIQUE M/LARGA	 16000 	 16000 	 16000 	 17000 	 17000 	 18000 	 18000 	 18000 	 20000 	 22000 
-DUNALASTAIR	POLERA DRYFIT M/CORTA	 14000 	 14000 	 14000 	 15000 	 15000 	 16000 	 16000 	 16000 	 17000 	 19000 
-DUNALASTAIR	POLERA DRYFIT M/LARGA	 15000 	 15000 	 15000 	 16000 	 16000 	 17000 	 17000 	 17000 	 18000 	 20000 
-DUNALASTAIR	POLERA CUADRO DEPORTE	 17000 	 17000 	 17000 	 18000 	 18000 	 19000 	 19000 	 19000 	 20000 	 22000 
-DUNALASTAIR	PECHERA	 12000 	 12000 	 12000 							
-DUNALASTAIR	POLAR	 18000 	 18000 	 18000 	 19000 	 19000 	 20000 	 20000 	 20000 	 22000 	 24000 
-DUNALASTAIR	PARKA	 19000 	 19000 	 19000 	 20000 	 20000 	 22000 	 22000 	 22000 	 24000 	
-DUNALASTAIR	SHORT HOMBRE	 14000 	 14000 	 14000 	 15000 	 15000 	 16000 	 16000 	 16000 	 17000 	 18000 
-DUNALASTAIR	SHORT DEPORTE MUJER	 17000 	 17000 	 17000 	 18000 	 18000 	 19000 	 19000 	 19000 	 20000 	 21000 
-DUNALASTAIR	SWEATER	 NO 	 NO 	 NO 	 18000 	 18000 	 19000 	 19000 	 19000 	 20000 	
-PUMAHUE	CALZA CORTA	 11000 	 11000 	 11000 	 12000 	 12000 	 13000 	 13000 	 13000 	 14000 	
-PUMAHUE	CALZA LARGA	 13000 	 13000 	 13000 	 14000 	 14000 	 15000 	 15000 	 15000 	 16000 	
-PUMAHUE	CHAQUETA AMERICANA	 28000 	 28000 	 28000 	 30000 	 30000 	 32000 	 32000 	 32000 	 36000 	
-PUMAHUE	CORBATA	 10000 	 10000 	 10000 	 10000 	 10000 	 10000 	 10000 	 10000 	 10000 	
-PUMAHUE	DELANTAL Y COTONA	 15000 	 15000 	 15000 	 16000 	 16000 	 17000 	 17000 	 17000 	 NO 	
-PUMAHUE	FALDA CAFE	 18000 	 18000 	 18000 	 20000 	 20000 	 22000 	 22000 	 22000 	 24000 	
-PUMAHUE	PANTALON BUZO	 16000 	 16000 	 16000 	 18000 	 18000 	 20000 	 20000 	 20000 	 22000 	
-PUMAHUE	PANTALON TELA CAFE	 20000 	 20000 	 20000 	 21000 	 21000 	 22000 	 22000 	 22000 	 24000 	
-PUMAHUE	POLERON MANGAS CAFE	 18000 	 18000 	 18000 	 19000 	 19000 	 21000 	 21000 	 21000 	 22000 	
-PUMAHUE	POLERON AZUL C/CIERRE	 15000 	 15000 	 15000 	 17000 	 17000 	 18000 	 18000 	 18000 	 20000 	
-PUMAHUE	POLERA CUELLO Y POLO PIQUE M/C	 15000 	 15000 	 15000 	 16000 	 16000 	 17000 	 17000 	 17000 	 19000 	
-PUMAHUE	POLERA CUELLO Y POLO PIQUE M/L	 16000 	 16000 	 16000 	 17000 	 17000 	 18000 	 18000 	 18000 	 20000 	
-PUMAHUE	POLERA DRYFIT M/C	 14000 	 14000 	 14000 	 15000 	 15000 	 16000 	 16000 	 16000 	 17000 	
-PUMAHUE	POLERA DRYFIT M/L	 15000 	 15000 	 15000 	 16000 	 16000 	 17000 	 17000 	 17000 	 18000 	
-PUMAHUE	POLAR	 18000 	 18000 	 18000 	 19000 	 19000 	 20000 	 20000 	 20000 	 22000 	
-PUMAHUE	PARKA	 19000 	 19000 	 19000 	 20000 	 20000 	 22000 	 22000 	 22000 	 24000 	
-PUMAHUE	SHORT	 13000 	 13000 	 13000 	 14000 	 14000 	 15000 	 15000 	 15000 	 16000 	
-PUMAHUE	SWEATER	 NO 	 NO 	 NO 	 18000 	 18000 	 19000 	 19000 	 19000 	 20000 	
-MAYOR	CALZA CORTA	 11000 	 11000 	 11000 	 12000 	 12000 	 13000 	 13000 	 13000 	 14000 	
-MAYOR	CALZA LARGA	 13000 	 13000 	 13000 	 14000 	 14000 	 15000 	 15000 	 15000 	 16000 	
-MAYOR	DELANTAL O COTONA	 15000 	 15000 	 15000 	 16000 	 16000 	 17000 	 17000 	 17000 	 NO 	
-MAYOR	FALDA	 18000 	 18000 	 18000 	 20000 	 20000 	 22000 	 22000 	 22000 	 24000 	
-MAYOR	PANTALON BUZO	 16000 	 16000 	 16000 	 18000 	 18000 	 20000 	 20000 	 20000 	 22000 	
-MAYOR	PANTALON TELA GRIS	 18000 	 18000 	 18000 	 19000 	 19000 	 21000 	 21000 	 21000 	 23000 	
-MAYOR	POLERON DEPORTE	 18000 	 18000 	 18000 	 19000 	 19000 	 21000 	 21000 	 21000 	 22000 	
-MAYOR	POLERON AZUL C/CIERRE	 15000 	 15000 	 15000 	 17000 	 17000 	 18000 	 18000 	 18000 	 20000 	
-MAYOR	POLERA AMARILLA DEPORTE M/C	 14000 	 14000 	 14000 	 15000 	 15000 	 16000 	 16000 	 16000 	 17000 	
-MAYOR	POLERA AMARILLA DEPORTE M/L	 15000 	 15000 	 15000 	 16000 	 16000 	 17000 	 17000 	 17000 	 18000 	
-MAYOR	POLERA AZUL PIQUE M/C	 15000 	 15000 	 15000 	 16000 	 16000 	 17000 	 17000 	 17000 	 19000 	
-MAYOR	POLERA AZUL PIQUE M/L	 16000 	 16000 	 16000 	 17000 	 17000 	 18000 	 18000 	 18000 	 20000 	
-MAYOR	POLAR	 18000 	 18000 	 18000 	 19000 	 19000 	 20000 	 20000 	 20000 	 22000 	
-MAYOR	PARKA	 19000 	 19000 	 19000 	 20000 	 20000 	 22000 	 22000 	 22000 	 24000 	
-MAYOR	SHORT FRANELA Y DEPORTE	 13000 	 13000 	 13000 	 14000 	 14000 	 15000 	 15000 	 15000 	 16000
-    `;
-
-    function parseProductos() {
-        const lineas = datosRaw.trim().split('\n');
-        const tallasHeaders = ["T3", "T4", "T6", "T8", "T10", "T12", "T14", "T16", "S/M/L/XL", "2XL"];
-        const listaFinal = [];
-
-        for (let i = 2; i < lineas.length; i++) {
-            const cols = lineas[i].split('\t').map(x => x.trim());
-            if (cols.length < 3) continue;
-
-            const colegio = cols[0];
-            const prenda = cols[1];
-
-            // Asignación inteligente de género
-            let genero = "Unisex";
-            if (prenda.includes("FALDA") || prenda.includes("CALZA") || prenda.includes("MUJER")) genero = "Niña";
-            if (prenda.includes("HOMBRE") || prenda.includes("RUGBY") || prenda.includes("PANTALON TELA")) genero = "Niño";
-
-            for (let t = 0; t < tallasHeaders.length; t++) {
-                const precio = parseInt(cols[t + 2]);
-                if (!isNaN(precio) && precio > 0) {
-                    
-                    // Si la talla es S/M/L/XL, las separamos para que el cliente pueda elegir
-                    if (tallasHeaders[t] === "S/M/L/XL") {
-                        ["S", "M", "L", "XL"].forEach(letra => {
-                            listaFinal.push({
-                                sku: `${colegio.substring(0,3)}-${prenda.substring(0,3)}-${letra}`,
-                                col: colegio,
-                                gen: genero,
-                                pre: prenda,
-                                tal: letra,
-                                p: precio,
-                                s: 20 // Stock inventado
-                            });
-                        });
-                    } else {
-                        listaFinal.push({
-                            sku: `${colegio.substring(0,3)}-${prenda.substring(0,3)}-${tallasHeaders[t]}`,
-                            col: colegio,
-                            gen: genero,
-                            pre: prenda,
-                            tal: tallasHeaders[t],
-                            p: precio,
-                            s: 20 // Stock inventado
-                        });
-                    }
-                }
-            }
-        }
-        return listaFinal;
-    }
-
-    let productos = parseProductos();
+    const API_URL = 'http://localhost:3000/api';
+    let productos = [];
+    let clientes = [];
     let carrito = [];
-    let itemSeleccionado = null;
-    let totalActual = 0;
-    let numeroFolio = 1001;
 
-    // INIT
-    window.onload = () => {
-        const selCol = document.getElementById('sel_colegio');
-        const colegios = [...new Set(productos.map(x => x.col))];
-        colegios.forEach(c => selCol.innerHTML += `<option value="${c}">${c}</option>`);
-    };
-
-    // LÓGICA DE AUTOCOMPLETE (Buscador Inteligente)
-    const inputBuscador = document.getElementById('buscador_global');
-    const boxResultados = document.getElementById('autocomplete_box');
-
-    inputBuscador.addEventListener('input', function() {
-        const val = this.value.toLowerCase();
-        boxResultados.innerHTML = '';
-        if (!val) {
-            boxResultados.style.display = 'none';
-            return;
-        }
-
-        const filtrados = clientesDB.filter(c => c.nombre.toLowerCase().includes(val) || c.id.includes(val));
-        
-        if (filtrados.length > 0) {
-            filtrados.forEach(c => {
-                const div = document.createElement('div');
-                div.className = 'ac-item';
-                div.innerHTML = `<span class="ac-name">${c.nombre}</span><span class="ac-phone">${c.id}</span>`;
-                div.onclick = () => seleccionarCliente(c);
-                boxResultados.appendChild(div);
-            });
-            boxResultados.style.display = 'block';
-        } else {
-            boxResultados.style.display = 'none';
-        }
-    });
-
-    document.addEventListener('click', function(e) {
-        if(e.target !== inputBuscador) boxResultados.style.display = 'none';
-    });
-
-    function seleccionarCliente(cliente) {
-        document.getElementById('cli_nombre').value = cliente.nombre;
-        document.getElementById('cli_telefono').value = cliente.id;
-        inputBuscador.value = ""; 
-        boxResultados.style.display = 'none';
+    async function cargarDatos() {
+        try {
+            const respProd = await fetch(`${API_URL}/productos`);
+            productos = await respProd.json();
+            const respCli = await fetch(`${API_URL}/clientes`);
+            clientes = await respCli.json();
+            
+            const selCol = document.getElementById('sel_colegio');
+            const colegios = [...new Set(productos.map(p => p.COLEGIO))];
+            colegios.forEach(c => selCol.innerHTML += `<option value="${c}">${c}</option>`);
+        } catch (e) { console.error("Error cargando datos:", e); }
     }
 
-    // FILTROS CASCADA ARTÍCULOS
-    function filtrarCategorias() {
-        const col = document.getElementById('sel_colegio').value;
-        const selGen = document.getElementById('sel_genero');
-        selGen.value = "";
-        selGen.disabled = !col;
-        resetPrendas();
-    }
-
-    function filtrarPrendas() {
+    function actualizarInterfaz() {
         const col = document.getElementById('sel_colegio').value;
         const gen = document.getElementById('sel_genero').value;
-        const selPre = document.getElementById('sel_prenda');
-        
-        selPre.innerHTML = '<option value="">Seleccione Prenda...</option>';
-        selPre.disabled = !(col && gen);
-        
-        if(col && gen) {
-            const prendas = [...new Set(productos.filter(x => x.col === col && (x.gen === gen || x.gen === "Unisex")).map(x => x.pre))];
-            prendas.forEach(p => selPre.innerHTML += `<option value="${p}">${p}</option>`);
+        const pre = document.getElementById('sel_prenda');
+        const tal = document.getElementById('sel_talla');
+
+        if (col && gen) {
+            const filtrados = productos.filter(p => p.COLEGIO === col);
+            const prendas = [...new Set(filtrados.map(p => p.PRENDA))];
+            pre.innerHTML = '<option value="">Seleccione...</option>';
+            prendas.forEach(p => pre.innerHTML += `<option value="${p}">${p}</option>`);
         }
-        resetTallas();
     }
 
-    function filtrarTallas() {
-        const col = document.getElementById('sel_colegio').value;
-        const pre = document.getElementById('sel_prenda').value;
-        const selTal = document.getElementById('sel_talla');
-        
-        selTal.innerHTML = '<option value="">Seleccione Talla...</option>';
-        selTal.disabled = !pre;
-
-        if(pre) {
-            const tallas = [...new Set(productos.filter(x => x.col === col && x.pre === pre).map(x => x.tal))];
-            tallas.forEach(t => selTal.innerHTML += `<option value="${t}">${t}</option>`);
-        }
-        document.getElementById('info_stock').style.display = 'none';
-        document.getElementById('btn_añadir').disabled = true;
-    }
-
-    function resetPrendas() {
-        document.getElementById('sel_prenda').innerHTML = '<option value="">Primero seleccione filtros...</option>';
-        document.getElementById('sel_prenda').disabled = true;
-        resetTallas();
-    }
-
-    function resetTallas() {
-        document.getElementById('sel_talla').innerHTML = '<option value="">...</option>';
-        document.getElementById('sel_talla').disabled = true;
-        document.getElementById('info_stock').style.display = 'none';
-        document.getElementById('btn_añadir').disabled = true;
-    }
-
-    function mostrarStock() {
+    function agregarAlCarrito() {
         const col = document.getElementById('sel_colegio').value;
         const pre = document.getElementById('sel_prenda').value;
         const tal = document.getElementById('sel_talla').value;
-        const info = document.getElementById('info_stock');
-        const btn = document.getElementById('btn_añadir');
-
-        itemSeleccionado = productos.find(x => x.col === col && x.pre === pre && x.tal === tal);
-
-        if(itemSeleccionado) {
-            info.innerHTML = `Stock: ${itemSeleccionado.s} disp.`;
-            info.style.display = 'inline-block';
-            btn.disabled = false;
-        }
-    }
-
-    // CARRITO
-    function agregarAlCarrito() {
         const cant = parseInt(document.getElementById('sel_cantidad').value);
-        if(cant > itemSeleccionado.s) return alert(`Solo quedan ${itemSeleccionado.s} unidades.`);
-
-        const existente = carrito.find(x => x.sku === itemSeleccionado.sku);
-        if(existente) {
-            if((existente.cant + cant) > itemSeleccionado.s) return alert("Excede el stock.");
-            existente.cant += cant;
-        } else {
-            carrito.push({ ...itemSeleccionado, cant: cant });
-        }
         
-        document.getElementById('sel_cantidad').value = 1;
-        document.getElementById('btn_añadir').disabled = true;
-        document.getElementById('info_stock').style.display = 'none';
-        
+        // Aquí iría la lógica de búsqueda de precio en el array productos
+        carrito.push({ pre, tal, cant, p: 20000 }); // Ejemplo
         renderCarrito();
     }
 
     function renderCarrito() {
-        const container = document.getElementById('cuerpo_nota');
-        const totalTxt = document.getElementById('total_venta');
-        container.innerHTML = "";
-        totalActual = 0;
-
-        if(carrito.length === 0) {
-            container.innerHTML = '<div class="empty-cart">El ticket está vacío.<br>Selecciona artículos para comenzar.</div>';
-            totalTxt.innerText = "$0";
-            return;
-        }
-
-        carrito.forEach((item, index) => {
-            const sub = item.p * item.cant;
-            totalActual += sub;
-            container.innerHTML += `
-                <div class="cart-item">
-                    <div class="cart-item-info">
-                        <div class="cart-item-title">${item.pre}</div>
-                        <div class="cart-item-meta">${item.col} • Talla ${item.tal} • Cant: ${item.cant}</div>
-                        <button class="btn-remove" onclick="quitar(${index})">Eliminar</button>
-                    </div>
-                    <div class="cart-item-price">$${sub.toLocaleString('es-CL')}</div>
-                </div>
-            `;
+        const cont = document.getElementById('cuerpo_nota');
+        cont.innerHTML = '';
+        let total = 0;
+        carrito.forEach((item, i) => {
+            total += (item.p * item.cant);
+            cont.innerHTML += `<div class="cart-item"><div><b>${item.pre}</b><br>Talla: ${item.tal} x ${item.cant}</div><div>$${(item.p * item.cant).toLocaleString()}</div></div>`;
         });
-        totalTxt.innerText = `$${totalActual.toLocaleString('es-CL')}`;
+        document.getElementById('total_venta').innerText = `$${total.toLocaleString()}`;
     }
 
-    function quitar(index) {
-        carrito.splice(index, 1);
-        renderCarrito();
-    }
-
-    // PAGO Y MODALES
-    function abrirPago() {
-        if(carrito.length === 0) return alert("No hay productos en la orden.");
-        document.getElementById('modal_total_texto').innerText = `$${totalActual.toLocaleString('es-CL')}`;
-        document.getElementById('modal_vendedor').value = ""; 
-        document.getElementById('modal_pago').style.display = 'flex';
-    }
-
+    function abrirPago() { document.getElementById('modal_pago').style.display = 'flex'; }
     function cerrarPago() { document.getElementById('modal_pago').style.display = 'none'; }
 
-    function procesarVenta() {
-        const vendedor = document.getElementById('modal_vendedor').value;
-        if(!vendedor) {
-            alert("⚠️ Identifica quién realiza la venta.");
-            document.getElementById('modal_vendedor').focus();
-            return;
-        }
-
-        carrito.forEach(item => {
-            const p = productos.find(x => x.sku === item.sku);
-            if(p) p.s -= item.cant;
+    async function procesarVenta() {
+        const venta = {
+            cabecera: { vendedor: document.getElementById('modal_vendedor').value, cliente: document.getElementById('cli_nombre').value },
+            detalle: carrito
+        };
+        const resp = await fetch(`${API_URL}/venta`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(venta)
         });
-        
-        document.getElementById('msg_exito_vendedor').innerHTML = `Operación validada por <strong>${vendedor}</strong>`;
-        document.getElementById('modal_pago').style.display = 'none';
-        document.getElementById('modal_exito').style.display = 'flex';
+        if (resp.ok) {
+            alert("Venta guardada en CSV correctamente");
+            location.reload();
+        }
     }
 
-    function nuevaVenta() {
-        carrito = [];
-        numeroFolio++;
-        document.getElementById('folio_nota').innerText = numeroFolio;
-        
-        document.getElementById('buscador_global').value = "";
-        document.getElementById('cli_nombre').value = "";
-        document.getElementById('cli_telefono').value = "";
-        
-        document.getElementById('sel_colegio').value = "";
-        document.getElementById('sel_cantidad').value = 1;
-        filtrarCategorias();
-        renderCarrito();
-        
-        document.getElementById('modal_exito').style.display = 'none';
-    }
+    window.onload = cargarDatos;
+    document.getElementById('fecha_actual').innerText = new Date().toLocaleDateString();
 </script>
 </body>
 </html>
