@@ -1,0 +1,16 @@
+[
+  {
+    "id": 1776291961236,
+    "folio": "IN-961223",
+    "vendedor": "Administrador",
+    "items": [
+      {
+        "colegio": "DUNALASTAIR",
+        "prenda": "CALCETA RUGBY",
+        "talla": "T10",
+        "cantidad": 20
+      }
+    ],
+    "timestamp": "2026-04-15T22:26:01.237Z"
+  }
+]

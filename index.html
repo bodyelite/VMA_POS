@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VMA Uniformes - Portal de Acceso</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        body { background: linear-gradient(135deg, #0f172a 0%, #0c4a6e 100%); height: 100vh; display: flex; align-items: center; justify-content: center; overflow: hidden; color: #ffffff; }
+        .bg-shape1 { position: absolute; top: -10%; left: -10%; width: 50vw; height: 50vw; background: radial-gradient(circle, rgba(56,189,248,0.1) 0%, transparent 70%); border-radius: 50%; z-index: 0; }
+        .bg-shape2 { position: absolute; bottom: -20%; right: -10%; width: 60vw; height: 60vw; background: radial-gradient(circle, rgba(2,132,199,0.1) 0%, transparent 70%); border-radius: 50%; z-index: 0; }
+        .portal-container { position: relative; z-index: 10; width: 100%; max-width: 900px; background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 24px; padding: 50px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6); text-align: center; }
+        .header-section { margin-bottom: 50px; }
+        .logo-container { width: 140px; height: 140px; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; }
+        .vma-real-logo { max-width: 100%; max-height: 100%; object-fit: contain; filter: drop-shadow(0 15px 25px rgba(0,0,0,0.6)); border-radius: 12px; }
+        .header-section h1 { font-size: 28px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 6px; color: #ffffff; }
+        .header-section p { font-size: 14px; color: #bae6fd; font-weight: 500; text-transform: uppercase; }
+        .modules-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
+        .module-card { background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 16px; padding: 25px 20px; display: flex; align-items: center; gap: 20px; cursor: pointer; text-decoration: none; color: white; transition: all 0.3s; text-align: left; position: relative; overflow: hidden; }
+        .module-card:hover { background: rgba(255, 255, 255, 0.06); border-color: rgba(255, 255, 255, 0.15); transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,0,0,0.25); }
+        .module-card.open-access { border-color: rgba(56, 189, 248, 0.3); background: rgba(56, 189, 248, 0.03); }
+        .module-card.open-access:hover { border-color: rgba(56, 189, 248, 0.6); }
+        .module-icon { width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+        .open-access .module-icon { background: #38bdf8; color: #0f172a; }
+        .locked-access .module-icon { background: rgba(255,255,255,0.06); color: #cbd5e1; }
+        .lock-icon { position: absolute; top: 20px; right: 20px; color: #475569; font-size: 12px; }
+        /* ── Fábrica & Costos — estilo destacado naranja ── */
+        .module-card.fabrica-card {
+            border-color: rgba(240, 165, 0, 0.35);
+            background: rgba(240, 165, 0, 0.04);
+        }
+        .module-card.fabrica-card:hover {
+            border-color: rgba(240, 165, 0, 0.7);
+            background: rgba(240, 165, 0, 0.09);
+            box-shadow: 0 15px 30px rgba(240, 165, 0, 0.12);
+        }
+        .module-card.fabrica-card .module-icon {
+            background: rgba(240, 165, 0, 0.15);
+            color: #f0a500;
+        }
+        .module-card.fabrica-card .lock-icon { color: #a16207; }
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(8px); z-index: 100; align-items: center; justify-content: center; }
+        .security-modal { background: #111827; border: 1px solid #374151; border-radius: 20px; padding: 40px; width: 400px; text-align: center; }
+        .security-modal i.fa-lock { font-size: 36px; color: #38bdf8; margin-bottom: 20px; }
+        .security-modal h3 { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+        .security-modal p { font-size: 13px; color: #94a3b8; margin-bottom: 25px; }
+        .auth-input { width: 100%; padding: 12px; border: 1px solid #374151; border-radius: 8px; background: #0b0f19; color: white; font-size: 20px; text-align: center; letter-spacing: 4px; outline: none; margin-bottom: 15px; }
+        .btn-auth { width: 100%; padding: 14px; background: #38bdf8; color: #0f172a; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; }
+        .btn-cancel { background: transparent; color: #6b7280; border: none; font-size: 12px; font-weight: 600; cursor: pointer; margin-top: 15px; }
+    </style>
+</head>
+<body>
+    <div class="bg-shape1"></div><div class="bg-shape2"></div>
+    <div class="portal-container">
+        <div class="header-section">
+            <div class="logo-container"><img src="logo.jpg" class="vma-real-logo"></div>
+            <h1>VMA CORE SYSTEM</h1><p>Módulo Central / Peñalolén</p>
+        </div>
+        <div class="modules-grid">
+            <a href="vma_pos.html?view=pos" class="module-card open-access">
+                <div class="module-icon"><i class="fa-solid fa-cash-register"></i></div>
+                <div class="module-info"><h3>Terminal de Ventas</h3><p>Caja, atención y notas.</p></div>
+            </a>
+            <div class="module-card locked-access" onclick="requestAccess('vma_pos.html?view=reportes', 'Reportes Gerenciales')">
+                <i class="fa-solid fa-lock lock-icon"></i>
+                <div class="module-icon"><i class="fa-solid fa-chart-pie"></i></div>
+                <div class="module-info"><h3>Reportes Gerenciales</h3><p>Cuadratura y KPIs.</p></div>
+            </div>
+            <div class="module-card locked-access" onclick="requestAccess('vma_pos.html?view=bodega', 'Control de Stock')">
+                <i class="fa-solid fa-lock lock-icon"></i>
+                <div class="module-icon"><i class="fa-solid fa-boxes-stacked"></i></div>
+                <div class="module-info"><h3>Control de Stock</h3><p>Ingreso y ajustes.</p></div>
+            </div>
+            <div class="module-card locked-access fabrica-card" onclick="requestAccess('vma_fabrica.html', 'Fábrica &amp; Costos (ERP)')">
+                <i class="fa-solid fa-lock lock-icon"></i>
+                <div class="module-icon"><i class="fa-solid fa-industry"></i></div>
+                <div class="module-info"><h3>Fábrica &amp; Costos (ERP)</h3><p>Insumos, recetas y PMP.</p></div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-overlay" id="authModal">
+        <div class="security-modal">
+            <i class="fa-solid fa-lock"></i><h3 id="modalTitle">Acceso Restringido</h3>
+            <p>Ingrese clave para continuar.</p>
+            <form onsubmit="verifyPassword(event)">
+                <input type="password" id="adminPin" class="auth-input" placeholder="••••" autocomplete="off" autofocus>
+                <button type="submit" class="btn-auth">Desbloquear Módulo</button>
+                <button type="button" class="btn-cancel" onclick="closeModal()">Cancelar</button>
+            </form>
+            <div style="margin-top:15px; font-size:11px; color:#94a3b8;">Demo clave: <strong>admin</strong></div>
+        </div>
+    </div>
+    <script>
+        let targetRoute = '';
+        function requestAccess(route, moduleName) {
+            targetRoute = route;
+            document.getElementById('modalTitle').innerText = moduleName;
+            document.getElementById('authModal').style.display = 'flex';
+            document.getElementById('adminPin').value = '';
+            setTimeout(() => document.getElementById('adminPin').focus(), 100);
+        }
+        function closeModal() { document.getElementById('authModal').style.display = 'none'; }
+        function verifyPassword(e) {
+            e.preventDefault();
+            if (document.getElementById('adminPin').value === 'admin') window.location.href = targetRoute;
+            else alert("Clave incorrecta");
+        }
+    </script>
+</body>
+</html>

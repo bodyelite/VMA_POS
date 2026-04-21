@@ -1,0 +1,31 @@
+[
+  {
+    "id": 1776291854809,
+    "folio": "VMA-854759",
+    "vendedor": "Caja 1",
+    "items": [
+      {
+        "colegio": "MAYOR",
+        "prenda": "PANTALON TELA GRIS",
+        "talla": "T10",
+        "cantidad": 2,
+        "precio": 19000
+      },
+      {
+        "colegio": "MAYOR",
+        "prenda": "CALZA LARGA",
+        "talla": "T10",
+        "cantidad": 1,
+        "precio": 14000
+      },
+      {
+        "colegio": "MAYOR",
+        "prenda": "POLAR",
+        "talla": "T14",
+        "cantidad": 2,
+        "precio": 20000
+      }
+    ],
+    "timestamp": "2026-04-15T22:24:14.809Z"
+  }
+]

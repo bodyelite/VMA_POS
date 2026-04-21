@@ -1,0 +1,13 @@
+id_insumo,nombre,categoria,unidad,stock_actual,costo_pmp,ultimo_costo,proveedor,fecha_ultima_compra,merma_pct,notas
+INS-001,Tela Piqué Blanca,Tela,metro,10,7000,7000,hhh,2026-04-20,0,
+INS-002,Confección Taller,Confección,unidad,0,2200,2200,,,0,
+INS-003,Bordado Logo,Bordado,unidad,0,500,500,,,0,
+INS-004,Cuello Tejido,Avío,unidad,0,1200,1200,,,0,
+INS-005,Puños Tejidos (Par),Avío,unidad,0,1000,1000,,,0,
+INS-006,Etiquetas Marca,Avío,unidad,0,25,25,,,0,
+INS-007,Hilo (Prorrateo Prenda),Hilo,unidad,0,30,30,,,0,
+INS-008,Botones (Set x3),Botón,unidad,0,60,60,,,0,
+INS-009,Insignia Colegio,Avío,unidad,0,250,250,,,0,
+INS-010,Etiqueta Talla,Avío,unidad,0,10,10,,,0,
+INS-011,Cinta Hiladillo,Avío,unidad,0,50,50,,,0,
+INS-012,Bolsa Empaque,Empaque,unidad,0,30,30,,,0,

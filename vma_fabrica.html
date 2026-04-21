@@ -1,0 +1,1229 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VMA Fábrica — Costos & Fabricación</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+<style>
+  :root {
+    --sidebar-bg: #f8f9fb;
+    --sidebar-w: 220px;
+    --accent:  #d97706;
+    --accent2: #b45309;
+    --surface: #f0f2f7;
+    --surface2: #ffffff;
+    --border:  #e2e8f0;
+    --text:    #1e293b;
+    --muted:   #64748b;
+    --green:   #16a34a;
+    --red:     #dc2626;
+    --font-ui: 'Segoe UI', system-ui, sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font-ui);
+    background: var(--surface);
+    color: var(--text);
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  #sidebar {
+    width: var(--sidebar-w);
+    background: var(--sidebar-bg);
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .sidebar-logo {
+    padding: 22px 18px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .sidebar-logo .brand {
+    font-size: 1.1rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+    text-transform: uppercase;
+  }
+
+  .sidebar-logo .subtitle {
+    font-size: 0.68rem;
+    color: var(--muted);
+    margin-top: 2px;
+    letter-spacing: 0.04em;
+  }
+
+  .sidebar-module-label {
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 18px 18px 6px;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 18px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    color: var(--muted);
+    border-left: 3px solid transparent;
+    transition: all 0.15s;
+    text-decoration: none;
+  }
+
+  .nav-item:hover { color: var(--text); background: rgba(0,0,0,0.05); }
+
+  .nav-item.active {
+    color: var(--accent);
+    border-left-color: var(--accent);
+    background: rgba(217,119,6,0.09);
+    font-weight: 600;
+  }
+
+  .nav-item .icon { font-size: 1rem; width: 20px; text-align: center; }
+
+  .sidebar-divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 10px 0;
+  }
+
+  .sidebar-bottom {
+    margin-top: auto;
+    padding: 14px 18px;
+    border-top: 1px solid var(--border);
+    font-size: 0.72rem;
+    color: var(--muted);
+  }
+
+  .back-link {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.8rem;
+    padding: 8px 18px;
+    transition: color 0.15s;
+  }
+  .back-link:hover { color: var(--text); }
+
+  #main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 28px;
+    background: var(--sidebar-bg);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .topbar-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+
+  .topbar-badge {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    background: rgba(217,119,6,0.12);
+    color: var(--accent);
+    border: 1px solid rgba(217,119,6,0.3);
+    padding: 3px 10px;
+    border-radius: 20px;
+  }
+
+  .tab-bar {
+    display: flex;
+    gap: 0;
+    background: var(--sidebar-bg);
+    border-bottom: 1px solid var(--border);
+    padding: 0 28px;
+    flex-shrink: 0;
+  }
+
+  .tab-btn {
+    padding: 12px 20px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--muted);
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    border-bottom: 2px solid transparent;
+    transition: all 0.15s;
+    letter-spacing: 0.02em;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+
+  .tab-btn:hover { color: var(--text); }
+
+  .tab-btn.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+
+  .tab-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 28px;
+  }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+
+  .section-title {
+    font-size: 1rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-title .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+
+  .btn {
+    padding: 8px 18px;
+    border-radius: 6px;
+    border: none;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #0f1117;
+  }
+  .btn-primary:hover { background: #ffb81a; }
+
+  .btn-secondary {
+    background: #ffffff;
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+
+  .vma-table-wrap {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .vma-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+  }
+
+  .vma-table th {
+    background: var(--sidebar-bg);
+    padding: 10px 14px;
+    text-align: left;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .vma-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+  }
+
+  .vma-table tr:last-child td { border-bottom: none; }
+
+  .vma-table tr:hover td { background: rgba(0,0,0,0.025); }
+
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 9px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 700;
+  }
+
+  .pill-tela    { background: rgba(96,165,250,0.15); color: #60a5fa; }
+  .pill-hilo    { background: rgba(167,139,250,0.15); color: #a78bfa; }
+  .pill-boton   { background: rgba(251,191,36,0.15); color: #fbbf24; }
+  .pill-avio    { background: rgba(52,211,153,0.15); color: #34d399; }
+  .pill-empaque { background: rgba(156,163,175,0.15); color: #9ca3af; }
+
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    color: var(--muted);
+    gap: 10px;
+  }
+
+  .empty-state .icon { font-size: 2.5rem; }
+  .empty-state .msg { font-size: 0.85rem; }
+
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 14px;
+    margin-bottom: 22px;
+  }
+
+  .stat-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 18px;
+  }
+
+  .stat-card .label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+
+  .stat-card .value {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: var(--text);
+  }
+
+  .stat-card .value.accent { color: var(--accent); }
+
+  .overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .overlay.open { display: flex; }
+
+  .modal {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 28px;
+    width: 480px;
+    max-width: 95vw;
+  }
+
+  .modal h3 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .form-group { display: flex; flex-direction: column; gap: 5px; }
+  .form-group.full { grid-column: 1 / -1; }
+
+  .form-group label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .form-group input,
+  .form-group select {
+    background: var(--sidebar-bg);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 8px 10px;
+    color: var(--text);
+    font-size: 0.85rem;
+    font-family: var(--font-ui);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  .form-group input:focus,
+  .form-group select:focus {
+    border-color: var(--accent);
+  }
+
+  .modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  #overlay-etiqueta .modal {
+    width: 340px;
+    background: #ffffff;
+    color: #000000;
+    padding: 0;
+    border-radius: 10px;
+    overflow: hidden;
+    border: none;
+  }
+
+  .etiqueta-header {
+    background: #0f1117;
+    color: #f0a500;
+    text-align: center;
+    padding: 10px 16px;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .etiqueta-body {
+    padding: 18px 20px 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    background: #fff;
+    color: #000;
+  }
+
+  .etiqueta-colegio {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #444;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    text-align: center;
+  }
+
+  .etiqueta-prenda {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: #000;
+    text-align: center;
+    line-height: 1.2;
+  }
+
+  .etiqueta-talla-badge {
+    background: #0f1117;
+    color: #f0a500;
+    font-size: 1.2rem;
+    font-weight: 900;
+    padding: 4px 18px;
+    border-radius: 6px;
+    letter-spacing: 0.1em;
+  }
+
+  .etiqueta-costo {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #111;
+  }
+
+  .etiqueta-sku {
+    font-family: monospace;
+    font-size: 0.7rem;
+    color: #666;
+    letter-spacing: 0.06em;
+  }
+
+  .etiqueta-barcode-wrap {
+    margin: 6px 0 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+
+  .etiqueta-barcode-wrap svg {
+    max-width: 260px;
+    width: 100%;
+  }
+
+  .etiqueta-qr-wrap {
+    display: flex;
+    justify-content: center;
+  }
+
+  .etiqueta-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 20px;
+    border-top: 1px solid #e5e7eb;
+    background: #fff;
+  }
+
+  @media print {
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+
+    body > *:not(#overlay-etiqueta),
+    #sidebar, #main, #vma-toast,
+    .overlay:not(#overlay-etiqueta),
+    .no-print,
+    #overlay-etiqueta .etiqueta-footer { display: none !important; }
+
+    #etq-barcode-wrap[style*="display: none"] { display: none !important; }
+    #etq-qr-wrap[style*="display: none"] { display: none !important; }
+
+    #overlay-etiqueta {
+      display: block !important;
+      position: static !important;
+      background: none !important;
+      inset: auto !important;
+      padding: 0 !important;
+    }
+
+    #overlay-etiqueta .modal {
+      width: 72mm !important;
+      max-width: 72mm !important;
+      margin: 0 auto !important;
+      box-shadow: none !important;
+      border: none !important;
+      page-break-after: avoid;
+    }
+
+    @page {
+      size: 80mm auto;
+      margin: 4mm;
+    }
+  }
+
+  .compras-layout { display: grid; grid-template-columns: 380px 1fr; gap: 22px; align-items: start; }
+  .compra-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 22px; }
+  .compra-card h4 { font-size: 0.78rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 18px; display: flex; align-items: center; gap: 8px; }
+  .compra-card h4::before { content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+  .form-group-inline { display: flex; flex-direction: column; gap: 5px; margin-bottom: 12px; }
+  .form-group-inline label { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted); margin-bottom: 2px; }
+  .form-group-inline input, .form-group-inline select { background: var(--sidebar-bg); border: 1px solid var(--border); border-radius: 6px; padding: 9px 12px; color: var(--text); font-size: 0.85rem; font-family: var(--font-ui); outline: none; transition: border-color 0.15s; width: 100%; }
+  .form-group-inline input:focus, .form-group-inline select:focus { border-color: var(--accent); }
+  .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .pmp-preview { background: var(--sidebar-bg); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; margin: 16px 0; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .pmp-preview .pv-item { display: flex; flex-direction: column; gap: 3px; }
+  .pmp-preview .pv-label { font-size: 0.62rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+  .pmp-preview .pv-val  { font-size: 1rem; font-weight: 800; color: var(--text); }
+  .pmp-preview .pv-val.new { color: var(--accent); }
+  .pmp-preview .pv-val.stock { color: var(--green); }
+  .separator { border: none; border-top: 1px solid var(--border); margin: 14px 0; }
+  .log-entry { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; border-bottom: 1px solid var(--border); transition: background 0.1s; }
+  .log-entry:last-child { border-bottom: none; }
+  .log-entry:hover { background: rgba(0,0,0,0.02); }
+  .log-entry .le-top { display: flex; justify-content: space-between; align-items: center; }
+  .log-entry .le-nombre { font-weight: 700; font-size: 0.82rem; }
+  .log-entry .le-pmp { color: var(--accent); font-weight: 800; font-size: 0.82rem; }
+  .log-entry .le-meta { font-size: 0.71rem; color: var(--muted); }
+  .log-entry .le-badge { font-size: 0.65rem; font-weight: 700; padding: 2px 7px; border-radius: 20px; background: rgba(34,197,94,0.12); color: var(--green); border: 1px solid rgba(34,197,94,0.2); }
+  .btn-compra { width: 100%; padding: 11px; font-size: 0.88rem; font-weight: 700; border-radius: 7px; background: var(--accent); color: #0f1117; border: none; cursor: pointer; transition: background 0.15s; letter-spacing: 0.02em; }
+  .btn-compra:hover { background: #ffb81a; }
+  .btn-compra:disabled { background: var(--border); color: var(--muted); cursor: not-allowed; }
+  .export-row { display: flex; justify-content: flex-end; margin-top: 14px; }
+  
+  .recetas-layout { display: grid; grid-template-columns: 1fr 300px; gap: 22px; align-items: start; }
+  .plantilla-bar { display: flex; align-items: center; gap: 10px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; flex-wrap: wrap; }
+  .plantilla-bar span { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-right: 4px; }
+  .btn-plantilla { padding: 7px 14px; border-radius: 6px; border: 1px solid var(--accent); background: rgba(217,119,6,0.08); color: var(--accent); font-size: 0.78rem; font-weight: 700; cursor: pointer; transition: all 0.15s; display: inline-flex; align-items: center; gap: 6px; }
+  .btn-plantilla:hover { background: rgba(217,119,6,0.18); }
+  .receta-meta-row { display: grid; grid-template-columns: 1fr 1fr 120px; gap: 12px; margin-bottom: 14px; }
+  .btn-del { padding: 3px 8px; background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.25); border-radius: 5px; color: var(--red); font-size: 0.8rem; cursor: pointer; transition: all 0.15s; }
+  .btn-del:hover { background: rgba(239,68,68,0.22); }
+  .agregar-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 18px; margin-top: 16px; }
+  .agregar-card h5 { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; display: flex; align-items: center; gap: 7px; }
+  .agregar-card h5::before { content:''; display:inline-block; width:5px;height:5px; border-radius:50%; background:var(--accent); }
+  .agregar-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap: 8px; align-items: end; }
+  .agregar-grid .fg { display: flex; flex-direction: column; gap: 4px; }
+  .agregar-grid .fg label { font-size: 0.63rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted); }
+  .agregar-grid input, .agregar-grid select { background: var(--sidebar-bg); border: 1px solid var(--border); border-radius: 5px; padding: 8px 10px; color: var(--text); font-size: 0.82rem; font-family: var(--font-ui); outline: none; width: 100%; transition: border-color 0.15s; }
+  .agregar-grid input:focus, .agregar-grid select:focus { border-color: var(--accent); }
+  
+  .resumen-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 18px; position: sticky; top: 0; }
+  .resumen-card h5 { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 16px; display: flex; align-items: center; gap: 7px; }
+  .resumen-card h5::before { content:''; display:inline-block; width:5px; height:5px; border-radius:50%; background:var(--green); }
+  .resumen-linea { display: flex; justify-content: space-between; align-items: flex-start; padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 0.78rem; gap: 8px; }
+  .resumen-linea:last-of-type { border-bottom: none; }
+  .resumen-linea .rl-nombre { color: var(--muted); flex: 1; line-height: 1.3; }
+  .resumen-linea .rl-valor { font-weight: 700; color: var(--text); white-space: nowrap; }
+  .resumen-total { margin-top: 14px; padding-top: 12px; border-top: 2px solid var(--accent); display: flex; justify-content: space-between; align-items: center; }
+  .resumen-total .rt-label { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+  .resumen-total .rt-valor { font-size: 1.4rem; font-weight: 800; color: var(--accent); }
+  .resumen-margen { margin-top: 14px; background: var(--sidebar-bg); border-radius: 7px; padding: 12px; }
+  .resumen-margen .fg-inline { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
+  .resumen-margen .fg-inline label { font-size: 0.62rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+  .resumen-margen input { background: var(--surface2); border: 1px solid var(--border); border-radius: 5px; padding: 6px 9px; color: var(--text); font-size: 0.85rem; font-family: var(--font-ui); outline: none; width: 100%; transition: border-color 0.15s; }
+  .resumen-margen input:focus { border-color: var(--accent); }
+  .precio-venta-box { display: flex; justify-content: space-between; align-items: center; padding: 8px 0 0; }
+  .precio-venta-box .pv-label { font-size: 0.7rem; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; }
+  .precio-venta-box .pv-precio { font-size: 1.05rem; font-weight: 800; color: var(--green); }
+  .receta-actions { display: flex; gap: 8px; margin-top: 14px; }
+  .receta-actions button { flex: 1; }
+  .talla-selector { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+  .talla-btn { padding: 5px 12px; border-radius: 5px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-size: 0.78rem; font-weight: 700; cursor: pointer; transition: all 0.15s; }
+  .talla-btn.active, .talla-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(217,119,6,0.08); }
+  .resumen-linea.talla-activa-row { background: rgba(217,119,6,0.07); border-radius: 4px; padding-left: 6px; padding-right: 6px; }
+  .resumen-linea.talla-activa-row .rl-nombre { color: var(--accent); }
+  .resumen-linea.talla-activa-row .rl-valor  { color: var(--accent); }
+
+  #vma-toast { position: fixed; bottom: 28px; right: 28px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 12px 20px; font-size: 0.82rem; font-weight: 600; display: none; z-index: 999; box-shadow: 0 4px 20px rgba(0,0,0,0.4); transition: opacity 0.3s; }
+  #vma-toast.ok  { border-color: var(--green); color: var(--green); }
+  #vma-toast.err { border-color: var(--red);   color: var(--red);   }
+</style>
+</head>
+<body>
+
+<nav id="sidebar">
+  <div class="sidebar-logo">
+    <div class="brand">VMA Uniformes</div>
+    <div class="subtitle">Módulo de Fábrica v1.0</div>
+  </div>
+  <a class="back-link" href="vma_pos.html">← Volver al POS</a>
+  <hr class="sidebar-divider">
+  <div class="sidebar-module-label">Costos & Fabricación</div>
+  <div class="nav-item active" onclick="switchTab('insumos')"><span class="icon">🧵</span> Maestro de Insumos</div>
+  <div class="nav-item" onclick="switchTab('compras')"><span class="icon">🛒</span> Ingreso Compras</div>
+  <div class="nav-item" onclick="switchTab('recetas')"><span class="icon">📋</span> Recetas / Escandallo</div>
+  <div class="nav-item" onclick="switchTab('ordenes')"><span class="icon">📦</span> Catálogo de Costos</div>
+  <div class="nav-item" onclick="switchTab('costos')"><span class="icon">📊</span> Análisis de Costos</div>
+  <div class="sidebar-bottom">VMA ERP · Fábrica<br><span id="csv-status" style="color:var(--accent)">CSV no cargado</span></div>
+</nav>
+
+<div id="main">
+  <div class="topbar">
+    <div class="topbar-title" id="topbar-title">🧵 Maestro de Insumos</div>
+    <div class="topbar-badge">FABRICACIÓN</div>
+  </div>
+
+  <div class="tab-bar">
+    <button class="tab-btn active" id="tab-btn-insumos" onclick="switchTab('insumos')">🧵 Insumos</button>
+    <button class="tab-btn" id="tab-btn-compras" onclick="switchTab('compras')">🛒 Ingreso Compras</button>
+    <button class="tab-btn" id="tab-btn-recetas" onclick="switchTab('recetas')">📋 Recetas</button>
+    <button class="tab-btn" id="tab-btn-ordenes" onclick="switchTab('ordenes')">📦 Catálogo</button>
+    <button class="tab-btn" id="tab-btn-costos" onclick="switchTab('costos')">📊 Costos</button>
+  </div>
+
+  <div class="tab-content">
+    <div class="tab-panel active" id="panel-insumos">
+      <div class="stats-row">
+        <div class="stat-card"><div class="label">Total Insumos</div><div class="value accent" id="stat-total-insumos">—</div></div>
+        <div class="stat-card"><div class="label">Con Stock</div><div class="value" id="stat-con-stock">—</div></div>
+        <div class="stat-card"><div class="label">Último PMP Tela</div><div class="value accent" id="stat-pmp-tela">—</div></div>
+      </div>
+      <div class="section-header">
+        <div class="section-title"><div class="dot"></div>Materias Primas</div>
+        <div style="display:flex;gap:10px;">
+          <button class="btn btn-secondary" id="btn-reimportar" onclick="loadInsumos()" title="Fallback: importar manualmente">↺ Reimportar CSV</button>
+          <button class="btn btn-primary" onclick="openModalInsumo()">+ Nuevo Insumo</button>
+        </div>
+      </div>
+      <div class="vma-table-wrap">
+        <table class="vma-table">
+          <thead><tr><th>ID</th><th>Nombre</th><th>Categoría</th><th>Unidad</th><th>Stock</th><th>PMP</th><th>Último Costo</th><th>Merma %</th><th>Acciones</th></tr></thead>
+          <tbody id="tbody-insumos"><tr><td colspan="9"><div class="empty-state"><div class="icon">🗃️</div><div class="msg">Carga vma_insumos.csv para comenzar</div></div></td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="panel-compras">
+      <div class="compras-layout">
+        <div class="compra-card">
+          <h4>Nueva Compra de Insumo</h4>
+          <div class="form-row-2">
+            <div class="form-group-inline"><label>Fecha Factura</label><input type="date" id="c-fecha"></div>
+            <div class="form-group-inline"><label>N° Factura</label><input type="text" id="c-folio" placeholder="001234"></div>
+          </div>
+          <div class="form-group-inline"><label>Proveedor</label><input type="text" id="c-proveedor" placeholder="Nombre del proveedor"></div>
+          <div class="form-group-inline"><label>Insumo</label><select id="c-insumo" onchange="onInsumoSelect()"><option value="">— Seleccionar insumo —</option></select></div>
+          <div class="form-row-2">
+            <div class="form-group-inline"><label>Cantidad Comprada</label><input type="number" id="c-cantidad" min="0" step="0.001" placeholder="0" oninput="calcPreview()"></div>
+            <div class="form-group-inline"><label>Unidad</label><input type="text" id="c-unidad" readonly style="color:var(--muted)"></div>
+          </div>
+          <div class="form-row-2">
+            <div class="form-group-inline"><label>Precio Unitario ($)</label><input type="number" id="c-precio-unit" min="0" step="1" placeholder="0" oninput="syncPrecios('unit')"></div>
+            <div class="form-group-inline"><label>Precio Total ($)</label><input type="number" id="c-precio-total" min="0" step="1" placeholder="0" oninput="syncPrecios('total')"></div>
+          </div>
+          <div class="pmp-preview" id="pmp-preview" style="display:none">
+            <div class="pv-item"><span class="pv-label">Stock Actual</span><span class="pv-val" id="prev-stock-actual">—</span></div>
+            <div class="pv-item"><span class="pv-label">PMP Actual</span><span class="pv-val" id="prev-pmp-actual">—</span></div>
+            <div class="pv-item"><span class="pv-label">Stock Nuevo</span><span class="pv-val stock" id="prev-stock-nuevo">—</span></div>
+            <div class="pv-item"><span class="pv-label">PMP Nuevo</span><span class="pv-val new" id="prev-pmp-nuevo">—</span></div>
+          </div>
+          <div class="form-group-inline"><label>Notas (opcional)</label><input type="text" id="c-notas" placeholder="Observaciones de la compra"></div>
+          <button class="btn-compra" id="btn-procesar" onclick="procesarCompraInsumo()" disabled>✅ Registrar Compra y Actualizar PMP</button>
+        </div>
+        <div>
+          <div class="section-header">
+            <div class="section-title"><div class="dot"></div>Historial de Compras</div>
+            <button class="btn btn-secondary" onclick="exportarLogCompras()">⬇️ Exportar CSV</button>
+          </div>
+          <div class="vma-table-wrap">
+            <div id="log-compras"><div class="empty-state" style="padding:50px 20px"><div class="icon">🧾</div><div class="msg">Aún no hay compras registradas en esta sesión</div></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="panel-recetas">
+      <div class="recetas-layout">
+        <div>
+          <div class="plantilla-bar">
+            <span>📐 Maqueta:</span>
+            <button class="btn-plantilla" id="btn-maqueta" onclick="cargarMaquetaMaestra()">⚡ Cargar Maqueta Maestra</button>
+            <div style="margin-left:auto;display:flex;gap:8px;">
+              <button class="btn btn-secondary" style="font-size:0.75rem;padding:6px 12px" onclick="limpiarReceta()">🗑️ Limpiar</button>
+              <button class="btn btn-secondary" style="font-size:0.75rem;padding:6px 12px" onclick="exportarReceta()">⬇️ Exportar CSV</button>
+              <button class="btn btn-primary" style="font-size:0.75rem;padding:6px 14px" onclick="guardarEscandallo()">💾 Guardar</button>
+            </div>
+          </div>
+          <div class="receta-meta-row">
+            <div style="margin:0;display:flex;flex-direction:column;gap:8px;">
+              <div class="form-group-inline" style="margin:0"><label>Colegio</label><select id="r-colegio" onchange="onColegioChange()"><option value="">— Seleccionar Colegio —</option></select></div>
+              <div class="form-group-inline" style="margin:0"><label>Artículo</label><select id="r-prenda" onchange="onPrendaChange()"><option value="">— Seleccionar Artículo —</option></select></div>
+              <input type="hidden" id="r-producto">
+            </div>
+            <div style="display:flex;flex-direction:column;gap:4px;">
+              <label style="font-size:0.68rem;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--muted)">Talla Activa</label>
+              <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                <div class="talla-selector" id="talla-selector">
+                  <button class="talla-btn active" onclick="setTalla(this,'S')">S</button><button class="talla-btn" onclick="setTalla(this,'M')">M</button><button class="talla-btn" onclick="setTalla(this,'L')">L</button><button class="talla-btn" onclick="setTalla(this,'XL')">XL</button><button class="talla-btn" onclick="setTalla(this,'XXL')">XXL</button>
+                </div>
+                <button class="btn btn-secondary" style="font-size:0.72rem;padding:5px 11px;white-space:nowrap" onclick="replicarTallaActiva()">🔄 Replicar a todas</button>
+              </div>
+            </div>
+            <div class="form-group-inline" style="margin:0"><label>ID Receta</label><input type="text" id="r-id" placeholder="REC-001"></div>
+          </div>
+          <div class="vma-table-wrap">
+            <table class="vma-table">
+              <thead><tr><th>Insumo</th><th>Tipo</th><th>Qty Neta</th><th>Unidad</th><th>Merma %</th><th>Qty Bruta</th><th>PMP actual</th><th>Costo línea</th><th></th></tr></thead>
+              <tbody id="tbody-receta-activa"><tr id="receta-empty-row"><td colspan="9"><div class="empty-state" style="padding:36px 20px"><div class="icon">📐</div><div class="msg">Carga una plantilla o agrega insumos manualmente</div></div></td></tr></tbody>
+              <tfoot id="tfoot-receta"></tfoot>
+            </table>
+          </div>
+          <div class="agregar-card">
+            <h5>Agregar Insumo a la Receta</h5>
+            <div class="agregar-grid">
+              <div class="fg"><label>Insumo</label><select id="ra-insumo" onchange="onRaInsumoSelect()"><option value="">— Seleccionar —</option></select></div>
+              <div class="fg"><label>Qty Neta</label><input type="number" id="ra-cant" min="0" step="0.001" placeholder="0" oninput="calcLineaPreview()"></div>
+              <div class="fg"><label>Merma %</label><input type="number" id="ra-merma" min="0" max="100" step="0.1" value="0" oninput="calcLineaPreview()"></div>
+              <div class="fg"><label>Tipo</label><select id="ra-tipo"><option>Tela</option><option>Avío</option><option>Confección</option><option>Bordado</option><option>Empaque</option><option>Mano de Obra</option></select></div>
+              <button class="btn btn-primary" style="padding:8px 14px;align-self:end" onclick="agregarInsumoReceta()">+ Añadir</button>
+            </div>
+            <div id="linea-preview" style="display:none;margin-top:10px;font-size:0.78rem;color:var(--muted);padding:8px 10px;background:var(--sidebar-bg);border-radius:5px;border:1px solid var(--border)">Qty bruta: <strong id="lp-bruta" style="color:var(--text)">—</strong> &nbsp;|&nbsp; PMP: <strong id="lp-pmp" style="color:var(--text)">—</strong> &nbsp;|&nbsp; Costo línea: <strong id="lp-costo" style="color:var(--accent)">—</strong></div>
+          </div>
+        </div>
+        <div class="resumen-card">
+          <h5>Resumen de Costo</h5>
+          <div id="resumen-lineas"><div style="color:var(--muted);font-size:0.78rem;text-align:center;padding:20px 0">Sin líneas aún</div></div>
+          <div class="resumen-total"><span class="rt-label">Costo Total</span><span class="rt-valor" id="rt-total">$0</span></div>
+          <div class="resumen-margen">
+            <div class="fg-inline"><label>Margen Utilidad %</label><input type="number" id="r-margen" value="100" min="0" max="500" step="1" oninput="calcularCostoTotalReceta()"></div>
+            <div class="fg-inline" style="margin-bottom:6px"><label>IVA %</label><input type="number" id="r-iva" value="19" min="0" max="30" step="1" oninput="calcularCostoTotalReceta()"></div>
+            <div class="precio-venta-box"><span class="pv-label">Precio Venta c/IVA</span><span class="pv-precio" id="rt-pvp">$0</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="panel-ordenes">
+      <div class="section-header">
+        <div class="section-title"><div class="dot"></div>Catálogo de Costos por Talla</div>
+        <div style="font-size:0.75rem;color:var(--muted)" id="catalogo-count">—</div>
+      </div>
+      <div style="display:flex;gap:14px;margin-bottom:20px;flex-wrap:wrap;">
+        <div style="display:flex;flex-direction:column;gap:5px;min-width:220px;">
+          <label style="font-size:0.68rem;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--muted)">Colegio</label>
+          <select id="cat-filtro-colegio" onchange="renderCatalogo()" style="background:var(--sidebar-bg);border:1px solid var(--border);border-radius:6px;padding:8px 10px;color:var(--text);font-size:0.83rem;font-family:var(--font-ui);outline:none;"><option value="">— Todos —</option></select>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:5px;min-width:140px;">
+          <label style="font-size:0.68rem;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--muted)">Talla</label>
+          <select id="cat-filtro-talla" onchange="renderCatalogo()" style="background:var(--sidebar-bg);border:1px solid var(--border);border-radius:6px;padding:8px 10px;color:var(--text);font-size:0.83rem;font-family:var(--font-ui);outline:none;"><option value="">— Todas —</option></select>
+        </div>
+        <div style="display:flex;align-items:flex-end;">
+          <button class="btn btn-secondary" style="font-size:0.78rem;padding:8px 14px" onclick="limpiarFiltrosCatalogo()">✕ Limpiar filtros</button>
+        </div>
+      </div>
+      <div class="vma-table-wrap">
+        <table class="vma-table">
+          <thead><tr><th>Colegio</th><th>Prenda / Artículo</th><th>Talla</th><th>Costo c/IVA</th><th>Estado</th><th>Acciones</th><th>Desplegar</th></tr></thead>
+          <tbody id="tbody-catalogo"><tr><td colspan="7"><div class="empty-state"><div class="icon">📦</div><div class="msg">Carga vma_precios_matriz.csv para ver el catálogo</div></div></td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="panel-costos">
+      <div class="empty-state" style="padding-top:100px;"><div class="icon">📊</div><div class="msg" style="font-size:1rem;font-weight:700;color:var(--text);">Análisis de Costos & Márgenes</div><div class="msg">Próximo sprint — Pendiente de desarrollo</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="overlay-insumo">
+  <div class="modal">
+    <h3>🧵 Nuevo Insumo</h3>
+    <div class="form-grid">
+      <div class="form-group"><label>ID Insumo</label><input type="text" id="fi-id" placeholder="INS-006"></div>
+      <div class="form-group"><label>Categoría</label><select id="fi-cat"><option value="Tela">Tela</option><option value="Hilo">Hilo</option><option value="Botón">Botón</option><option value="Avío">Avío</option><option value="Empaque">Empaque</option></select></div>
+      <div class="form-group full"><label>Nombre</label><input type="text" id="fi-nombre" placeholder="Tela Piqué Blanca"></div>
+      <div class="form-group"><label>Unidad</label><select id="fi-unidad"><option value="metro">metro</option><option value="kg">kg</option><option value="gr">gr</option><option value="unidad">unidad</option><option value="rollo">rollo</option><option value="caja">caja</option></select></div>
+      <div class="form-group"><label>Merma %</label><input type="number" id="fi-merma" value="0" min="0" max="100" step="0.1"></div>
+      <div class="form-group"><label>Stock Inicial</label><input type="number" id="fi-stock" value="0" min="0"></div>
+      <div class="form-group"><label>Costo Unitario</label><input type="number" id="fi-costo" value="0" min="0"></div>
+      <div class="form-group full"><label>Proveedor</label><input type="text" id="fi-proveedor" placeholder="Nombre proveedor"></div>
+      <div class="form-group full"><label>Notas</label><input type="text" id="fi-notas" placeholder="Observaciones opcionales"></div>
+    </div>
+    <div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal('overlay-insumo')">Cancelar</button><button class="btn btn-primary" onclick="saveInsumo()">Guardar Insumo</button></div>
+  </div>
+</div>
+
+<div class="overlay" id="overlay-etiqueta">
+  <div class="modal" id="etiqueta-print-area">
+    <div class="etiqueta-header">VMA UNIFORMES · ETIQUETA</div>
+    <div class="etiqueta-body">
+      <div class="etiqueta-colegio" id="etq-colegio">—</div>
+      <div class="etiqueta-prenda"  id="etq-prenda">—</div>
+      <div class="etiqueta-talla-badge" id="etq-talla">—</div>
+      <div class="etiqueta-costo"   id="etq-costo">$—</div>
+      <div class="etiqueta-sku"     id="etq-sku">SKU: —</div>
+      <div class="etiqueta-barcode-wrap" id="etq-barcode-wrap"><svg id="barcode"></svg></div>
+      <div class="etiqueta-qr-wrap" id="etq-qr-wrap"><canvas id="qrcode"></canvas></div>
+    </div>
+    <div class="etiqueta-formato no-print" style="display:flex;align-items:center;justify-content:center;gap:16px;padding:10px 20px;border-top:1px solid #e5e7eb;background:#f9fafb;font-size:0.78rem;font-family:var(--font-ui);">
+      <span style="font-weight:700;color:#374151;font-size:0.72rem;letter-spacing:0.06em;text-transform:uppercase">Formato:</span>
+      <label style="display:flex;align-items:center;gap:5px;cursor:pointer;color:#111"><input type="radio" name="etq-formato" value="ambos" checked onchange="aplicarFormatoEtiqueta(this.value)"> Ambos</label>
+      <label style="display:flex;align-items:center;gap:5px;cursor:pointer;color:#111"><input type="radio" name="etq-formato" value="barcode" onchange="aplicarFormatoEtiqueta(this.value)"> Solo Barcode</label>
+      <label style="display:flex;align-items:center;gap:5px;cursor:pointer;color:#111"><input type="radio" name="etq-formato" value="qr" onchange="aplicarFormatoEtiqueta(this.value)"> Solo QR</label>
+    </div>
+    <div class="etiqueta-footer">
+      <button class="btn btn-secondary" style="font-size:0.78rem;padding:6px 14px" onclick="closeModal('overlay-etiqueta')">✕ Cerrar</button>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <label style="font-size:0.72rem;font-weight:700;color:#666;white-space:nowrap">Copias:</label>
+        <input type="number" id="etq-copias" value="1" min="1" max="500" style="width:60px;padding:5px 8px;border:1px solid #d1d5db;border-radius:5px;font-size:0.85rem;font-weight:700;text-align:center;outline:none;">
+      </div>
+      <button class="btn btn-primary" style="font-size:0.78rem;padding:6px 16px" onclick="imprimirEtiquetas()">🖨️ Imprimir</button>
+    </div>
+  </div>
+</div>
+
+<div id="vma-toast"></div>
+
+<script>
+let insumos = []; let recetas = []; let logCompras = []; let preciosMatriz = []; let recetasCSV = [];
+
+const sanitizarCosto = v => parseInt((v || '').toString().replace(/[^0-9]/g, '')) || 0;
+
+const RECETAS_TIPO = {
+  polera:   [ {kw:'tela',cat:'Tela',unidad:'metro',merma:5,tipo:'Tela'}, {kw:'hilo',cat:'Hilo',unidad:'rollo',merma:8,tipo:'Avío'}, {kw:'confec',cat:'Confección',unidad:'servicio',merma:0,tipo:'Confección'}, {kw:'boton',cat:'Botón',unidad:'unidad',merma:5,tipo:'Avío'}, {kw:'bordado',cat:'Avío',unidad:'servicio',merma:0,tipo:'Bordado'}, {kw:'bolsa',cat:'Empaque',unidad:'unidad',merma:0,tipo:'Empaque'} ],
+  poleron:  [ {kw:'tela',cat:'Tela',unidad:'metro',merma:6,tipo:'Tela'}, {kw:'hilo',cat:'Hilo',unidad:'rollo',merma:8,tipo:'Avío'}, {kw:'confec',cat:'Confección',unidad:'servicio',merma:0,tipo:'Confección'}, {kw:'cierre',cat:'Avío',unidad:'unidad',merma:2,tipo:'Avío'}, {kw:'bordado',cat:'Avío',unidad:'servicio',merma:0,tipo:'Bordado'}, {kw:'bolsa',cat:'Empaque',unidad:'unidad',merma:0,tipo:'Empaque'} ],
+  pantalon: [ {kw:'tela',cat:'Tela',unidad:'metro',merma:7,tipo:'Tela'}, {kw:'hilo',cat:'Hilo',unidad:'rollo',merma:8,tipo:'Avío'}, {kw:'confec',cat:'Confección',unidad:'servicio',merma:0,tipo:'Confección'}, {kw:'elast',cat:'Avío',unidad:'metro',merma:3,tipo:'Avío'}, {kw:'cierre',cat:'Avío',unidad:'unidad',merma:2,tipo:'Avío'}, {kw:'bolsa',cat:'Empaque',unidad:'unidad',merma:0,tipo:'Empaque'} ],
+  short:    [ {kw:'tela',cat:'Tela',unidad:'metro',merma:5,tipo:'Tela'}, {kw:'hilo',cat:'Hilo',unidad:'rollo',merma:8,tipo:'Avío'}, {kw:'confec',cat:'Confección',unidad:'servicio',merma:0,tipo:'Confección'}, {kw:'elast',cat:'Avío',unidad:'metro',merma:3,tipo:'Avío'}, {kw:'bolsa',cat:'Empaque',unidad:'unidad',merma:0,tipo:'Empaque'} ],
+  calza:    [ {kw:'tela',cat:'Tela',unidad:'metro',merma:5,tipo:'Tela'}, {kw:'hilo',cat:'Hilo',unidad:'rollo',merma:8,tipo:'Avío'}, {kw:'confec',cat:'Confección',unidad:'servicio',merma:0,tipo:'Confección'}, {kw:'elast',cat:'Avío',unidad:'metro',merma:3,tipo:'Avío'} ],
+  parka:    [ {kw:'tela',cat:'Tela',unidad:'metro',merma:8,tipo:'Tela'}, {kw:'hilo',cat:'Hilo',unidad:'rollo',merma:8,tipo:'Avío'}, {kw:'confec',cat:'Confección',unidad:'servicio',merma:0,tipo:'Confección'}, {kw:'cierre',cat:'Avío',unidad:'unidad',merma:2,tipo:'Avío'}, {kw:'forro',cat:'Tela',unidad:'metro',merma:5,tipo:'Tela'}, {kw:'bolsa',cat:'Empaque',unidad:'unidad',merma:0,tipo:'Empaque'} ],
+  polar:    [ {kw:'polar',cat:'Tela',unidad:'metro',merma:6,tipo:'Tela'}, {kw:'hilo',cat:'Hilo',unidad:'rollo',merma:8,tipo:'Avío'}, {kw:'confec',cat:'Confección',unidad:'servicio',merma:0,tipo:'Confección'}, {kw:'cierre',cat:'Avío',unidad:'unidad',merma:2,tipo:'Avío'}, {kw:'bolsa',cat:'Empaque',unidad:'unidad',merma:0,tipo:'Empaque'} ],
+  delantal: [ {kw:'tela',cat:'Tela',unidad:'metro',merma:5,tipo:'Tela'}, {kw:'hilo',cat:'Hilo',unidad:'rollo',merma:8,tipo:'Avío'}, {kw:'confec',cat:'Confección',unidad:'servicio',merma:0,tipo:'Confección'}, {kw:'boton',cat:'Botón',unidad:'unidad',merma:5,tipo:'Avío'}, {kw:'bolsa',cat:'Empaque',unidad:'unidad',merma:0,tipo:'Empaque'} ],
+  falda:    [ {kw:'tela',cat:'Tela',unidad:'metro',merma:6,tipo:'Tela'}, {kw:'hilo',cat:'Hilo',unidad:'rollo',merma:8,tipo:'Avío'}, {kw:'confec',cat:'Confección',unidad:'servicio',merma:0,tipo:'Confección'}, {kw:'cierre',cat:'Avío',unidad:'unidad',merma:2,tipo:'Avío'}, {kw:'bolsa',cat:'Empaque',unidad:'unidad',merma:0,tipo:'Empaque'} ],
+  chaqueta: [ {kw:'tela',cat:'Tela',unidad:'metro',merma:8,tipo:'Tela'}, {kw:'hilo',cat:'Hilo',unidad:'rollo',merma:8,tipo:'Avío'}, {kw:'confec',cat:'Confección',unidad:'servicio',merma:0,tipo:'Confección'}, {kw:'boton',cat:'Botón',unidad:'unidad',merma:5,tipo:'Avío'}, {kw:'forro',cat:'Tela',unidad:'metro',merma:5,tipo:'Tela'}, {kw:'bolsa',cat:'Empaque',unidad:'unidad',merma:0,tipo:'Empaque'} ],
+  sweater:  [ {kw:'hilo',cat:'Hilo',unidad:'rollo',merma:8,tipo:'Avío'}, {kw:'confec',cat:'Confección',unidad:'servicio',merma:0,tipo:'Confección'}, {kw:'bolsa',cat:'Empaque',unidad:'unidad',merma:0,tipo:'Empaque'} ],
+  calceta:  [ {kw:'hilo',cat:'Hilo',unidad:'rollo',merma:10,tipo:'Avío'}, {kw:'confec',cat:'Confección',unidad:'servicio',merma:0,tipo:'Confección'} ],
+  corbata:  [ {kw:'tela',cat:'Tela',unidad:'metro',merma:6,tipo:'Tela'}, {kw:'hilo',cat:'Hilo',unidad:'rollo',merma:5,tipo:'Avío'}, {kw:'confec',cat:'Confección',unidad:'servicio',merma:0,tipo:'Confección'} ],
+  default:  [ {kw:'tela',cat:'Tela',unidad:'metro',merma:5,tipo:'Tela'}, {kw:'hilo',cat:'Hilo',unidad:'rollo',merma:8,tipo:'Avío'}, {kw:'confec',cat:'Confección',unidad:'servicio',merma:0,tipo:'Confección'}, {kw:'bolsa',cat:'Empaque',unidad:'unidad',merma:0,tipo:'Empaque'} ]
+};
+
+function detectarTipoReceta(prenda) {
+  const p = (prenda || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  if (p.includes('poleron') || p.includes('polerón')) return 'poleron';
+  if (p.includes('polera') || p.includes('polo')) return 'polera';
+  if (p.includes('pantalon') || p.includes('buzo')) return 'pantalon';
+  if (p.includes('short')) return 'short';
+  if (p.includes('calza')) return 'calza';
+  if (p.includes('calceta')) return 'calceta';
+  if (p.includes('parka')) return 'parka';
+  if (p.includes('polar')) return 'polar';
+  if (p.includes('delantal') || p.includes('cotona')) return 'delantal';
+  if (p.includes('falda')) return 'falda';
+  if (p.includes('chaqueta') || p.includes('americana')) return 'chaqueta';
+  if (p.includes('sweater') || p.includes('jockey')) return 'sweater';
+  if (p.includes('corbata')) return 'corbata';
+  return 'default';
+}
+
+function cargarRecetaTipo(prenda) {
+  if (!insumos.length) return;
+  const tipo = detectarTipoReceta(prenda);
+  const plantilla = RECETAS_TIPO[tipo] || RECETAS_TIPO.default;
+  const lineaBase = plantilla.map(tmpl => {
+    const norm = s => (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+    const idx = insumos.findIndex(ins => norm(ins.nombre).includes(tmpl.kw) || norm(ins.categoria).includes(norm(tmpl.cat)));
+    const ins = idx >= 0 ? insumos[idx] : null;
+    return {
+      nombre:      ins ? ins.nombre : tmpl.cat + ' (no cargado)',
+      id_insumo:   ins ? ins.id_insumo : '—',
+      insumo_idx:  idx,
+      categoria:   ins ? ins.categoria : tmpl.cat,
+      unidad:      ins ? ins.unidad : tmpl.unidad,
+      cant_base:   null,
+      cant_neta:   0,
+      merma:       ins ? (parseFloat(ins.merma_pct) || tmpl.merma) : tmpl.merma,
+      cant_bruta:  0,
+      pmp:         ins ? (sanitizarCosto(ins.costo_pmp) || 0) : 0,
+      costo_linea: 0,
+      tipo:        tmpl.tipo
+    };
+  });
+  matrizTallas = {};
+  TALLAS_REC.forEach(t => { matrizTallas[t] = structuredClone(lineaBase); });
+  recetaActiva = matrizTallas[tallaActiva];
+  const btnMaq = document.getElementById('btn-maqueta');
+  if (btnMaq) { btnMaq.textContent = `⚡ Maqueta: ${tipo.charAt(0).toUpperCase()+tipo.slice(1)}`; btnMaq.style.opacity = '1'; }
+  document.getElementById('r-id').value = 'REC-NUEVO';
+  renderRecetaActiva();
+  calcularCostoTotalReceta();
+  toast(`📐 Receta base "${tipo}" cargada — ajusta cantidades y elimina lo que no aplica`, 'ok', 4500);
+}
+const TABS = ['insumos', 'compras', 'recetas', 'ordenes', 'costos'];
+const TITLES = { insumos: '🧵 Maestro de Insumos', compras: '🛒 Ingreso de Compras', recetas: '📋 Recetas / Escandallo', ordenes: '📦 Catálogo de Costos', costos: '📊 Análisis de Costos' };
+
+function switchTab(tab) {
+  TABS.forEach(t => {
+    document.getElementById(`panel-${t}`).classList.toggle('active', t === tab);
+    document.getElementById(`tab-btn-${t}`).classList.toggle('active', t === tab);
+    document.querySelectorAll('.nav-item').forEach(n => { if (n.getAttribute('onclick') === `switchTab('${t}')`) n.classList.toggle('active', t === tab); });
+  });
+  document.getElementById('topbar-title').textContent = TITLES[tab];
+  if (tab === 'ordenes') renderCatalogo();
+}
+
+function openModalInsumo() { document.getElementById('overlay-insumo').classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.overlay').forEach(o => { o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); }); });
+const fmt = n => Number(n).toLocaleString('es-CL');
+const catPill = cat => { const map = {Tela:'pill-tela',Hilo:'pill-hilo','Botón':'pill-boton',Avío:'pill-avio',Empaque:'pill-empaque'}; return `<span class="pill ${map[cat]||''}">${cat}</span>`; };
+function toast(msg, tipo = 'ok', ms = 3200) { const el = document.getElementById('vma-toast'); el.textContent = msg; el.className = tipo; el.style.display = 'block'; clearTimeout(el._t); el._t = setTimeout(() => { el.style.display = 'none'; }, ms); }
+
+function parsearInsumos(csvText) {
+  Papa.parse(csvText, {
+    header: true, skipEmptyLines: true,
+    complete: r => {
+      insumos = r.data.map(row => ({ ...row, stock_actual: parseFloat(row.stock_actual) || 0, costo_pmp: sanitizarCosto(row.costo_pmp), ultimo_costo: sanitizarCosto(row.ultimo_costo), merma_pct: parseFloat(row.merma_pct) || 0 }));
+      renderInsumos(); poblarSelectorInsumos();
+      const status = document.getElementById('csv-status');
+      if (status) { const base = status.textContent.replace(/^insumos:[^·]*/, '').replace(/^\s*·\s*/, ''); status.textContent = `insumos: ${insumos.length} · ${base}`.replace(/\s*·\s*$/, ''); }
+    }
+  });
+}
+
+function loadInsumos() { const input = document.createElement('input'); input.type = 'file'; input.accept = '.csv'; input.onchange = e => { const file = e.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = ev => parsearInsumos(ev.target.result); reader.readAsText(file); }; input.click(); }
+function poblarSelectorInsumos() { const sel = document.getElementById('c-insumo'); sel.innerHTML = '<option value="">— Seleccionar insumo —</option>' + insumos.map((ins, i) => `<option value="${i}">[${ins.id_insumo}] ${ins.nombre} (${ins.unidad}) — PMP: $${fmt(ins.costo_pmp)}</option>`).join(''); poblarSelectorReceta(); if (recetaActiva.length) { recalcularLineasConTalla(); calcularCostoTotalReceta(); } }
+function renderInsumos() {
+  const tbody = document.getElementById('tbody-insumos');
+  if (!insumos.length) { tbody.innerHTML = '<tr><td colspan="9"><div class="empty-state"><div class="icon">🗃️</div><div class="msg">Sin datos</div></div></td></tr>'; return; }
+  tbody.innerHTML = insumos.map((r, i) => `<tr><td style="color:var(--muted);font-family:monospace">${r.id_insumo||'—'}</td><td style="font-weight:600">${r.nombre||'—'}</td><td>${catPill(r.categoria)}</td><td style="color:var(--muted)">${r.unidad||'—'}</td><td style="font-weight:700;color:${Number(r.stock_actual)>0?'var(--green)':'var(--red)'}">${fmt(r.stock_actual||0)}</td><td style="color:var(--accent);font-weight:700">$${fmt(r.costo_pmp||0)}</td><td>$${fmt(r.ultimo_costo||0)}</td><td>${r.merma_pct||0}%</td><td><button class="btn btn-secondary" style="padding:4px 10px;font-size:0.75rem" onclick="editInsumo(${i})">✏️</button></td></tr>`).join('');
+  document.getElementById('stat-total-insumos').textContent = insumos.length; document.getElementById('stat-con-stock').textContent = insumos.filter(r => Number(r.stock_actual) > 0).length; const tela = insumos.find(r => r.categoria === 'Tela'); document.getElementById('stat-pmp-tela').textContent = tela ? `$${fmt(tela.costo_pmp)}` : '—';
+}
+function saveInsumo() { const nuevo = { id_insumo: document.getElementById('fi-id').value, nombre: document.getElementById('fi-nombre').value, categoria: document.getElementById('fi-cat').value, unidad: document.getElementById('fi-unidad').value, stock_actual: document.getElementById('fi-stock').value, costo_pmp: document.getElementById('fi-costo').value, ultimo_costo: document.getElementById('fi-costo').value, proveedor: document.getElementById('fi-proveedor').value, merma_pct: document.getElementById('fi-merma').value, notas: document.getElementById('fi-notas').value, fecha_ultima_compra: new Date().toISOString().split('T')[0] }; insumos.push(nuevo); renderInsumos(); closeModal('overlay-insumo'); }
+
+let recetaActiva = []; let tallaActiva = 'S'; let matrizTallas = {}; const TALLAS_REC = ['S', 'M', 'L', 'XL', 'XXL'];
+function setTalla(btn, talla) { document.querySelectorAll('.talla-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); tallaActiva = talla; if (Object.keys(matrizTallas).length > 0) recetaActiva = matrizTallas[talla] ?? []; renderRecetaActiva(); calcularCostoTotalReceta(); }
+const catToTipo = cat => { const map = { 'Tela': 'Tela', 'Hilo': 'Avío', 'Botón': 'Avío', 'Avío': 'Avío', 'Empaque': 'Empaque', 'Confección': 'Confección', 'Servicio': 'Confección', 'Bordado': 'Bordado', 'Mano de Obra': 'Mano de Obra' }; return map[cat] || cat || 'Avío'; };
+
+function cargarMaquetaMaestra() {
+  if (!insumos.length) return alert('⚠️ Primero carga el Maestro de Insumos');
+  const lineaBase = insumos.map((ins, i) => ({ nombre: ins.nombre, id_insumo: ins.id_insumo, insumo_idx: i, categoria: ins.categoria, unidad: ins.unidad, cant_base: null, cant_neta: 0, merma: parseFloat(ins.merma_pct) || 0, cant_bruta: 0, pmp: parseFloat(ins.costo_pmp) || 0, costo_linea: 0, tipo: catToTipo(ins.categoria) }));
+  matrizTallas = {}; TALLAS_REC.forEach(talla => { matrizTallas[talla] = structuredClone(lineaBase); }); recetaActiva = matrizTallas[tallaActiva]; document.getElementById('r-id').value = 'REC-MAQUETA'; renderRecetaActiva(); calcularCostoTotalReceta();
+}
+function recalcularLineasConTalla() { recetaActiva.forEach(linea => { if (linea.insumo_idx >= 0 && insumos[linea.insumo_idx]) { linea.pmp = parseFloat(insumos[linea.insumo_idx].costo_pmp) || 0; } linea.cant_bruta = +(linea.cant_neta * (1 + linea.merma / 100)).toFixed(4); linea.costo_linea = +(linea.cant_bruta * linea.pmp).toFixed(0); }); renderRecetaActiva(); }
+function renderRecetaActiva() {
+  const tbody = document.getElementById('tbody-receta-activa'); const tfoot = document.getElementById('tfoot-receta');
+  if (!recetaActiva.length) { tbody.innerHTML = `<tr id="receta-empty-row"><td colspan="9"><div class="empty-state" style="padding:36px 20px"><div class="icon">📐</div><div class="msg">Carga una plantilla o agrega insumos manualmente</div></div></td></tr>`; if (tfoot) tfoot.innerHTML = ''; return; }
+  tbody.innerHTML = recetaActiva.map((linea, i) => `<tr><td style="font-weight:600">${linea.nombre}${linea.id_insumo !== '—' ? `<br><span style="font-size:0.68rem;color:var(--muted);font-family:monospace">${linea.id_insumo}</span>` : '<br><span style="font-size:0.68rem;color:var(--red)">sin match en maestro</span>'}</td><td>${catPill(linea.tipo)}</td><td><input type="number" value="${linea.cant_neta}" min="0" step="0.001" style="width:72px;background:var(--sidebar-bg);border:1px solid var(--border);border-radius:4px;padding:4px 6px;color:var(--text);font-size:0.8rem" onchange="editarCantLinea(${i}, this.value)"></td><td style="color:var(--muted)">${linea.unidad}</td><td><input type="number" value="${linea.merma}" min="0" max="100" step="0.1" style="width:58px;background:var(--sidebar-bg);border:1px solid var(--border);border-radius:4px;padding:4px 6px;color:var(--text);font-size:0.8rem" onchange="editarMermaLinea(${i}, this.value)">%</td><td style="font-weight:600">${linea.cant_bruta}</td><td style="color:${linea.pmp > 0 ? 'var(--text)' : 'var(--red)'}">$${fmt(linea.pmp)}</td><td style="color:var(--accent);font-weight:700">$${fmt(linea.costo_linea)}</td><td><button class="btn-del" onclick="eliminarInsumoReceta(${i})">🗑️</button></td></tr>`).join('');
+  const totalTalla = recetaActiva.reduce((s, l) => s + (l.costo_linea || 0), 0);
+  if (tfoot) tfoot.innerHTML = `<tr style="background:var(--sidebar-bg);border-top:2px solid var(--accent)"><td colspan="7" style="text-align:right;font-size:0.7rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);padding:10px 14px">Σ COSTO TALLA ${tallaActiva}</td><td style="color:var(--accent);font-weight:800;font-size:1rem;padding:10px 14px">$${fmt(totalTalla)}</td><td style="padding:10px 14px"></td></tr>`;
+}
+function editarCantLinea(idx, val) { recetaActiva[idx].cant_neta = parseFloat(val) || 0; recetaActiva[idx].cant_bruta = +(recetaActiva[idx].cant_neta * (1 + recetaActiva[idx].merma / 100)).toFixed(4); recetaActiva[idx].costo_linea = +(recetaActiva[idx].cant_bruta * recetaActiva[idx].pmp).toFixed(0); renderRecetaActiva(); calcularCostoTotalReceta(); }
+function editarMermaLinea(idx, val) { recetaActiva[idx].merma = parseFloat(val) || 0; recetaActiva[idx].cant_bruta = +(recetaActiva[idx].cant_neta * (1 + recetaActiva[idx].merma / 100)).toFixed(4); recetaActiva[idx].costo_linea = +(recetaActiva[idx].cant_bruta * recetaActiva[idx].pmp).toFixed(0); renderRecetaActiva(); calcularCostoTotalReceta(); }
+function eliminarInsumoReceta(idx) { if (Object.keys(matrizTallas).length > 0) { TALLAS_REC.forEach(talla => { if (matrizTallas[talla]) matrizTallas[talla].splice(idx, 1); }); recetaActiva = matrizTallas[tallaActiva]; } else { recetaActiva.splice(idx, 1); } renderRecetaActiva(); calcularCostoTotalReceta(); }
+function replicarTallaActiva() { if (!Object.keys(matrizTallas).length) return toast('⚠️ Carga la Maqueta Maestra antes de replicar.', 'err'); if (!recetaActiva.length) return toast('⚠️ La talla activa está vacía — nada que replicar.', 'err'); const otras = TALLAS_REC.filter(t => t !== tallaActiva); otras.forEach(talla => { const copia = structuredClone(recetaActiva); copia.forEach(linea => { if (linea.insumo_idx >= 0 && insumos[linea.insumo_idx]) { linea.pmp = parseFloat(insumos[linea.insumo_idx].costo_pmp) || 0; } linea.cant_bruta = +(linea.cant_neta * (1 + linea.merma / 100)).toFixed(4); linea.costo_linea = +(linea.cant_bruta * linea.pmp).toFixed(0); }); matrizTallas[talla] = copia; }); renderRecetaActiva(); calcularCostoTotalReceta(); toast(`🔄 Talla ${tallaActiva} replicada a: ${otras.join(', ')}`, 'ok', 4000); }
+function limpiarReceta() { matrizTallas = {}; recetaActiva = []; document.getElementById('r-colegio').value = ''; document.getElementById('r-prenda').innerHTML = '<option value="">— Seleccionar Artículo —</option>'; document.getElementById('r-producto').value = ''; document.getElementById('r-id').value = ''; renderRecetaActiva(); calcularCostoTotalReceta(); }
+function onRaInsumoSelect() { calcLineaPreview(); }
+function calcLineaPreview() { const idx = document.getElementById('ra-insumo').value; const cantStr = document.getElementById('ra-cant').value; const merma = parseFloat(document.getElementById('ra-merma').value) || 0; if (idx === '' || !cantStr) { document.getElementById('linea-preview').style.display = 'none'; return; } const ins = insumos[parseInt(idx)]; const cantNeta = parseFloat(cantStr) || 0; const cantBruta = +(cantNeta * (1 + merma / 100)).toFixed(4); const pmp = parseFloat(ins.costo_pmp) || 0; const costo = +(cantBruta * pmp).toFixed(0); document.getElementById('lp-bruta').textContent = `${cantBruta} ${ins.unidad}`; document.getElementById('lp-pmp').textContent = `$${fmt(pmp)}`; document.getElementById('lp-costo').textContent = `$${fmt(costo)}`; document.getElementById('linea-preview').style.display = 'block'; }
+function agregarInsumoReceta() { const idxStr = document.getElementById('ra-insumo').value; const cantNeta = parseFloat(document.getElementById('ra-cant').value) || 0; const merma = parseFloat(document.getElementById('ra-merma').value) || 0; const tipo = document.getElementById('ra-tipo').value; if (idxStr === '' || cantNeta <= 0) return alert('Selecciona un insumo e ingresa una cantidad válida.'); const ins = insumos[parseInt(idxStr)]; const pmp = parseFloat(ins.costo_pmp) || 0; if (Object.keys(matrizTallas).length > 0) { TALLAS_REC.forEach(talla => { const qty = talla === tallaActiva ? cantNeta : 0; const bruta = +(qty * (1 + merma / 100)).toFixed(4); matrizTallas[talla].push({ nombre: ins.nombre, id_insumo: ins.id_insumo, insumo_idx: parseInt(idxStr), categoria: ins.categoria, unidad: ins.unidad, cant_base: null, cant_neta: qty, merma, cant_bruta: bruta, pmp, costo_linea: +(bruta * pmp).toFixed(0), tipo }); }); recetaActiva = matrizTallas[tallaActiva]; } else { const cantBruta = +(cantNeta * (1 + merma / 100)).toFixed(4); recetaActiva.push({ nombre: ins.nombre, id_insumo: ins.id_insumo, insumo_idx: parseInt(idxStr), categoria: ins.categoria, unidad: ins.unidad, cant_base: null, cant_neta: cantNeta, merma, cant_bruta: cantBruta, pmp, costo_linea: +(cantBruta * pmp).toFixed(0), tipo }); } renderRecetaActiva(); calcularCostoTotalReceta(); document.getElementById('ra-insumo').value = ''; document.getElementById('ra-cant').value = ''; document.getElementById('ra-merma').value = '0'; document.getElementById('linea-preview').style.display = 'none'; }
+function calcularCostoTotalReceta() { const margen = parseFloat(document.getElementById('r-margen').value) || 0; const iva = parseFloat(document.getElementById('r-iva').value) || 0; const resumenDiv = document.getElementById('resumen-lineas'); const hasTallas = Object.keys(matrizTallas).length > 0; if (hasTallas) { const filas = TALLAS_REC.map(talla => { const lineas = matrizTallas[talla] || []; const total = lineas.reduce((s, l) => s + (l.costo_linea || 0), 0); const pvNeto = total * (1 + margen / 100); const pvIva = +(pvNeto * (1 + iva / 100)).toFixed(0); return { talla, total, pvIva, esActiva: talla === tallaActiva }; }); resumenDiv.innerHTML = filas.map(f => `<div class="resumen-linea${f.esActiva ? ' talla-activa-row' : ''}"><span class="rl-nombre" style="font-weight:${f.esActiva ? '700' : '400'}">Talla ${f.talla}${f.esActiva ? ' ◀' : ''}</span><span class="rl-valor">$${fmt(f.total)}</span></div>`).join(''); const activa = filas.find(f => f.esActiva) || filas[0]; document.getElementById('rt-total').textContent = `$${fmt(activa.total)}`; document.getElementById('rt-pvp').textContent = `$${fmt(activa.pvIva)}`; } else { const total = recetaActiva.reduce((s, l) => s + (l.costo_linea || 0), 0); if (!recetaActiva.length) { resumenDiv.innerHTML = '<div style="color:var(--muted);font-size:0.78rem;text-align:center;padding:20px 0">Sin líneas aún</div>'; } else { resumenDiv.innerHTML = recetaActiva.filter(l => l.costo_linea > 0).map(l => `<div class="resumen-linea"><span class="rl-nombre">${l.nombre}<br><span style="font-size:0.68rem">${l.cant_bruta} ${l.unidad}</span></span><span class="rl-valor">$${fmt(l.costo_linea)}</span></div>`).join(''); } const pvNeto = total * (1 + margen / 100); const pvIva = +(pvNeto * (1 + iva / 100)).toFixed(0); document.getElementById('rt-total').textContent = `$${fmt(total)}`; document.getElementById('rt-pvp').textContent = `$${fmt(pvIva)}`; } }
+function poblarSelectorReceta() { const sel = document.getElementById('ra-insumo'); if (!sel) return; sel.innerHTML = '<option value="">— Seleccionar —</option>' + insumos.map((ins, i) => `<option value="${i}">[${ins.id_insumo}] ${ins.nombre} — PMP: $${fmt(ins.costo_pmp)}</option>`).join(''); }
+async function guardarEscandallo() {
+  const hasTallas = Object.keys(matrizTallas).length > 0;
+  if (!hasTallas && !recetaActiva.length) return toast('⚠️ No hay receta para guardar.', 'err');
+  const producto = document.getElementById('r-producto').value;
+  const colegio  = document.getElementById('r-colegio').value;
+  const prenda   = document.getElementById('r-prenda').value;
+  const idReceta = document.getElementById('r-id').value || 'REC-X';
+  const margen   = parseFloat(document.getElementById('r-margen').value) || 0;
+  const iva      = parseFloat(document.getElementById('r-iva').value) || 0;
+  if (!colegio || !prenda) return toast('⚠️ Selecciona Colegio y Artículo antes de guardar.', 'err');
+  let rows = [];
+  if (hasTallas) {
+    TALLAS_REC.forEach(talla => {
+      (matrizTallas[talla] || []).filter(l => l.cant_neta > 0).forEach(l => rows.push({ id_receta: idReceta, producto, talla, id_insumo: l.id_insumo, nombre_insumo: l.nombre, cantidad: l.cant_neta, unidad: l.unidad, merma_pct: l.merma, cantidad_con_merma: l.cant_bruta, costo_unitario_pmp: l.pmp, costo_total: l.costo_linea, tipo_componente: l.tipo }));
+    });
+  } else {
+    rows = recetaActiva.map(l => ({ id_receta: idReceta, producto, talla: tallaActiva, id_insumo: l.id_insumo, nombre_insumo: l.nombre, cantidad: l.cant_neta, unidad: l.unidad, merma_pct: l.merma, cantidad_con_merma: l.cant_bruta, costo_unitario_pmp: l.pmp, costo_total: l.costo_linea, tipo_componente: l.tipo }));
+  }
+  const costos = {};
+  const skus    = {};
+  TALLAS_REC.forEach(talla => {
+    const lineas  = matrizTallas[talla] || [];
+    const total   = lineas.reduce((s, l) => s + (l.costo_linea || 0), 0);
+    const pvNeto  = total * (1 + margen / 100);
+    costos[talla] = +(pvNeto * (1 + iva / 100)).toFixed(0);
+    skus[talla]   = generarSKU(colegio, prenda, talla);
+  });
+  const skuBase = generarSKU(colegio, prenda, '').replace(/-T$/, '');
+  try {
+    const r1 = await fetch('/api/guardar-receta', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ producto, rows }) });
+    if (!r1.ok) throw new Error(`guardar-receta: ${r1.status}`);
+    recetasCSV = recetasCSV.filter(r => r.producto !== producto);
+    recetasCSV.push(...rows);
+    const r2 = await fetch('/api/actualizar-matriz', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ colegio, prenda, costos, skuBase, skus }) });
+    if (!r2.ok) throw new Error(`actualizar-matriz: ${r2.status}`);
+    const costoPromedio = Math.round(Object.values(costos).filter(v => v > 0).reduce((a, b) => a + b, 0) / (Object.values(costos).filter(v => v > 0).length || 1));
+    preciosMatriz.forEach(r => {
+      if ((r.COLEGIO || '').trim() === colegio && (r.PRENDA || '').trim() === prenda) {
+        r.COSTO = costoPromedio; r.SKU = skuBase;
+      }
+    });
+    toast(`💾 Guardado · SKU: ${skuBase} · ${rows.length} líneas`, 'ok', 4500);
+    renderCatalogo();
+  } catch (err) { toast(`❌ Error al guardar: ${err.message}`, 'err', 6000); }
+}
+function exportarReceta() { const hasTallas = Object.keys(matrizTallas).length > 0; if (!hasTallas && !recetaActiva.length) return alert('No hay receta para exportar.'); const producto = document.getElementById('r-producto').value || 'receta'; const idReceta = document.getElementById('r-id').value || 'REC-X'; let rows = []; if (hasTallas) { TALLAS_REC.forEach(talla => { (matrizTallas[talla] || []).filter(l => l.cant_neta > 0).forEach(l => rows.push({ id_receta: idReceta, producto, talla, id_insumo: l.id_insumo, nombre_insumo: l.nombre, cantidad: l.cant_neta, unidad: l.unidad, merma_pct: l.merma, cantidad_con_merma: l.cant_bruta, costo_unitario_pmp: l.pmp, costo_total: l.costo_linea, tipo_componente: l.tipo })); }); } else { rows = recetaActiva.map(l => ({ id_receta: idReceta, producto, talla: tallaActiva, id_insumo: l.id_insumo, nombre_insumo: l.nombre, cantidad: l.cant_neta, unidad: l.unidad, merma_pct: l.merma, cantidad_con_merma: l.cant_bruta, costo_unitario_pmp: l.pmp, costo_total: l.costo_linea, tipo_componente: l.tipo })); } if (!rows.length) return alert('No hay filas con cantidad > 0 para exportar.'); const csv = Papa.unparse(rows); const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `vma_receta_${producto.replace(/\s+/g,'_')}_${new Date().toISOString().split('T')[0]}.csv`; a.click(); }
+
+function onInsumoSelect() { const idx = document.getElementById('c-insumo').value; const btnProcesar = document.getElementById('btn-procesar'); if (idx === '') { document.getElementById('c-unidad').value = ''; document.getElementById('pmp-preview').style.display = 'none'; btnProcesar.disabled = true; return; } const ins = insumos[parseInt(idx)]; document.getElementById('c-unidad').value = ins.unidad; calcPreview(); }
+function syncPrecios(origen) { const cant = parseFloat(document.getElementById('c-cantidad').value) || 0; if (origen === 'unit') { const unit = parseFloat(document.getElementById('c-precio-unit').value) || 0; if (cant > 0) document.getElementById('c-precio-total').value = +(unit * cant).toFixed(0); } else { const total = parseFloat(document.getElementById('c-precio-total').value) || 0; if (cant > 0) document.getElementById('c-precio-unit').value = +(total / cant).toFixed(2); } calcPreview(); }
+function calcPreview() { const idx = document.getElementById('c-insumo').value; if (idx === '') return; const ins = insumos[parseInt(idx)]; const cantNueva = parseFloat(document.getElementById('c-cantidad').value) || 0; const precioUnit = parseFloat(document.getElementById('c-precio-unit').value) || 0; const stockActual = ins.stock_actual; const pmpActual = ins.costo_pmp; const stockNuevo = stockActual + cantNueva; const pmpNuevo = stockNuevo > 0 ? ((stockActual * pmpActual) + (cantNueva * precioUnit)) / stockNuevo : precioUnit; document.getElementById('prev-stock-actual').textContent = `${fmt(stockActual)} ${ins.unidad}`; document.getElementById('prev-pmp-actual').textContent = `$${fmt(pmpActual)}`; document.getElementById('prev-stock-nuevo').textContent = `${fmt(+stockNuevo.toFixed(4))} ${ins.unidad}`; document.getElementById('prev-pmp-nuevo').textContent = `$${fmt(+pmpNuevo.toFixed(2))}`; document.getElementById('pmp-preview').style.display = 'grid'; const listo = cantNueva > 0 && precioUnit > 0; document.getElementById('btn-procesar').disabled = !listo; }
+function procesarCompraInsumo() { const idx = parseInt(document.getElementById('c-insumo').value); const cantNueva = parseFloat(document.getElementById('c-cantidad').value) || 0; const precioUnit = parseFloat(document.getElementById('c-precio-unit').value) || 0; const fecha = document.getElementById('c-fecha').value || new Date().toISOString().split('T')[0]; const folio = document.getElementById('c-folio').value || 'S/N'; const proveedor = document.getElementById('c-proveedor').value || 'Sin proveedor'; const notas = document.getElementById('c-notas').value; if (!cantNueva || !precioUnit || isNaN(idx)) return; const ins = insumos[idx]; const stockActual = ins.stock_actual; const pmpActual = ins.costo_pmp; const stockNuevo = stockActual + cantNueva; const pmpNuevo = stockNuevo > 0 ? ((stockActual * pmpActual) + (cantNueva * precioUnit)) / stockNuevo : precioUnit; const snap = { fecha, folio, proveedor, id_insumo: ins.id_insumo, nombre: ins.nombre, unidad: ins.unidad, cant_comprada: cantNueva, precio_unit: precioUnit, precio_total: +(cantNueva * precioUnit).toFixed(0), stock_anterior: stockActual, pmp_anterior: pmpActual, stock_nuevo: +stockNuevo.toFixed(4), pmp_nuevo: +pmpNuevo.toFixed(2), notas, ts: new Date().toISOString() }; insumos[idx].stock_actual = +stockNuevo.toFixed(4); insumos[idx].costo_pmp = +pmpNuevo.toFixed(2); insumos[idx].ultimo_costo = precioUnit; insumos[idx].proveedor = proveedor; insumos[idx].fecha_ultima_compra = fecha; logCompras.unshift(snap); renderInsumos(); poblarSelectorInsumos(); renderLogCompras(); fetch('/api/guardar-compra', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ insumos }) }).then(r => r.ok ? toast(`✅ Stock actualizado · PMP ${ins.nombre}: $${fmt(+pmpNuevo.toFixed(2))}`, 'ok') : toast(`⚠️ Compra en memoria pero el CSV no se actualizó (server off)`, 'err')).catch(() => toast(`⚠️ Server no disponible — compra registrada solo en memoria`, 'err')); document.getElementById('c-insumo').value = ''; document.getElementById('c-cantidad').value = ''; document.getElementById('c-precio-unit').value = ''; document.getElementById('c-precio-total').value = ''; document.getElementById('c-folio').value = ''; document.getElementById('c-proveedor').value = ''; document.getElementById('c-unidad').value = ''; document.getElementById('c-notas').value = ''; document.getElementById('pmp-preview').style.display = 'none'; document.getElementById('btn-procesar').disabled = true; }
+function renderLogCompras() { const container = document.getElementById('log-compras'); if (!logCompras.length) { container.innerHTML = '<div class="empty-state" style="padding:50px 20px"><div class="icon">🧾</div><div class="msg">Aún no hay compras registradas en esta sesión</div></div>'; return; } container.innerHTML = logCompras.map(c => `<div class="log-entry"><div class="le-top"><span class="le-nombre">${c.nombre} <span style="color:var(--muted);font-weight:400;font-size:0.75rem">[${c.id_insumo}]</span></span><span class="le-pmp">PMP → $${fmt(c.pmp_nuevo)}</span></div><div class="le-meta">📅 ${c.fecha} &nbsp;|&nbsp; 🧾 Fctr ${c.folio} &nbsp;|&nbsp; 🏢 ${c.proveedor} &nbsp;|&nbsp; ${fmt(c.cant_comprada)} ${c.unidad} × $${fmt(c.precio_unit)} = <strong>$${fmt(c.precio_total)}</strong> &nbsp;|&nbsp; Stock: ${fmt(c.stock_anterior)} → <span style="color:var(--green);font-weight:700">${fmt(c.stock_nuevo)}</span> &nbsp;|&nbsp; PMP: $${fmt(c.pmp_anterior)} → <span style="color:var(--accent);font-weight:700">$${fmt(c.pmp_nuevo)}</span> ${c.notas ? `&nbsp;|&nbsp; ${c.notas}` : ''}</div></div>`).join(''); }
+function exportarLogCompras() { if (!logCompras.length) return alert('No hay compras para exportar.'); const csv = Papa.unparse(logCompras); const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `vma_compras_${new Date().toISOString().split('T')[0]}.csv`; a.click(); }
+
+function poblarFiltrosCatalogo() { const selColegio = document.getElementById('cat-filtro-colegio'); const selTalla = document.getElementById('cat-filtro-talla'); if (!selColegio || !selTalla) return; const colegios = [...new Set(preciosMatriz.map(r => r.COLEGIO).filter(Boolean))].sort(); const tallas = [...new Set(preciosMatriz.map(r => (r.TALLA || r.talla) || '').filter(Boolean))]; const ordenTallas = ['2','4','6','8','10','12','14','S','M','L','XL','XXL']; tallas.sort((a, b) => { const ia = ordenTallas.indexOf(a), ib = ordenTallas.indexOf(b); if (ia !== -1 && ib !== -1) return ia - ib; if (ia !== -1) return -1; if (ib !== -1) return 1; return a.localeCompare(b); }); selColegio.innerHTML = '<option value="">— Todos —</option>' + colegios.map(c => `<option value="${c}">${c}</option>`).join(''); selTalla.innerHTML = '<option value="">— Todas —</option>' + tallas.map(t => `<option value="${t}">${t}</option>`).join(''); }
+
+let _catalogoAbiertos = new Set();
+
+function toggleAcordeon(groupId, key) {
+  const hijas = document.querySelectorAll(`tr[data-group="${groupId}"]`);
+  const chevron = document.getElementById(`chev-${groupId}`);
+  const abierto = hijas.length && hijas[0].style.display !== 'none';
+  hijas.forEach(tr => { tr.style.display = abierto ? 'none' : 'table-row'; });
+  if (chevron) chevron.textContent = abierto ? '▶' : '▼';
+  if (abierto) _catalogoAbiertos.delete(key);
+  else _catalogoAbiertos.add(key);
+}
+
+function renderCatalogo() {
+  const tbody = document.getElementById('tbody-catalogo');
+  const countEl = document.getElementById('catalogo-count');
+  const selColegio = document.getElementById('cat-filtro-colegio');
+  const selTalla = document.getElementById('cat-filtro-talla');
+  if (!tbody) return;
+
+  const filtroColegio = selColegio ? selColegio.value : '';
+  const filtroTalla = selTalla ? selTalla.value : '';
+
+  if (!preciosMatriz.length) {
+    tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><div class="icon">📦</div><div class="msg">Carga vma_precios_matriz.csv para ver el catálogo</div></div></td></tr>`;
+    if (countEl) countEl.textContent = '—';
+    return;
+  }
+
+  const tallaValida = t => { const v = (t || '').toString().trim(); return v !== '' && v !== '-' && v !== '—'; };
+  const productosConTallasReales = new Set(preciosMatriz.filter(r => tallaValida(r.TALLA || r.talla) && (parseFloat(r.COSTO) || 0) > 0).map(r => `${(r.COLEGIO || '').trim()} — ${(r.PRENDA || '').trim()}`));
+  const productosConReceta = new Set(recetasCSV.map(r => r.producto));
+
+  const filasFiltradas = preciosMatriz.filter(r => {
+    const talla = (r.TALLA || r.talla || '').toString().trim();
+    const colegio = (r.COLEGIO || '').trim();
+    const prenda = (r.PRENDA || '').trim();
+    const producto = `${colegio} — ${prenda}`;
+    if (filtroColegio && colegio !== filtroColegio) return false;
+    if (filtroTalla && talla !== filtroTalla) return false;
+    if (productosConTallasReales.has(producto) && !tallaValida(talla)) return false;
+    return true;
+  });
+
+  if (!filasFiltradas.length) {
+    tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state" style="padding:40px 20px"><div class="icon">🔍</div><div class="msg">Sin resultados para los filtros aplicados</div></div></td></tr>`;
+    if (countEl) countEl.textContent = '0 artículos';
+    return;
+  }
+
+  const grupos = new Map();
+  filasFiltradas.forEach(r => {
+    const colegio = (r.COLEGIO || '—').trim();
+    const prenda = (r.PRENDA || '—').trim();
+    const key = `${colegio} — ${prenda}`;
+    if (!grupos.has(key)) grupos.set(key, { colegio, prenda, hijas: [] });
+    grupos.get(key).hijas.push(r);
+  });
+
+  const esc = s => s.replace(/'/g, "\\'");
+  let html = '';
+  let gIdx = 0;
+
+  grupos.forEach(({ colegio, prenda, hijas }) => {
+    const producto = `${colegio} — ${prenda}`;
+    const tieneReceta = productosConReceta.has(producto);
+    const groupId = `g${gIdx++}`;
+    const tieneHijas = hijas.some(h => tallaValida(h.TALLA || h.talla));
+    const estadoBadge = tieneReceta ? `<span style="font-size:0.68rem;font-weight:700;padding:2px 8px;border-radius:20px;background:rgba(34,197,94,0.12);color:var(--green);border:1px solid rgba(34,197,94,0.2)">✓ Costeado</span>` : `<span style="font-size:0.68rem;font-weight:700;padding:2px 8px;border-radius:20px;background:rgba(122,127,154,0.12);color:var(--muted);border:1px solid var(--border)">Sin receta</span>`;
+
+    html += `
+      <tr style="cursor:${tieneHijas ? 'pointer' : 'default'};background:var(--surface2)" onclick="${tieneHijas ? `toggleAcordeon('${groupId}','${esc(producto)}')` : ''}">
+        <td style="color:var(--muted);font-size:0.8rem;font-weight:600">${colegio}</td>
+        <td style="font-weight:700;font-size:0.88rem">${prenda}</td>
+        <td style="text-align:center;color:var(--muted);font-size:0.8rem">${tieneHijas ? `<span style="color:var(--muted);font-size:0.72rem">${hijas.length} talla${hijas.length !== 1 ? 's' : ''}</span>` : '—'}</td>
+        <td style="color:var(--muted)">—</td>
+        <td>${estadoBadge}</td>
+        <td><button class="btn btn-secondary" style="padding:4px 10px;font-size:0.75rem;white-space:nowrap" onclick="event.stopPropagation();irAReceta('${esc(colegio)}','${esc(prenda)}')">✏️ Editar / Ver</button></td>
+        <td style="text-align:center;width:36px">${tieneHijas ? `<span id="chev-${groupId}" style="color:var(--accent);font-size:0.75rem;font-weight:700;user-select:none">▶</span>` : ''}</td>
+      </tr>`;
+
+    hijas.forEach(r => {
+      const talla = (r.TALLA || r.talla || '—').toString().trim();
+      const costo = parseFloat(r.COSTO) || 0;
+      const skuEtq = generarSKU(colegio, prenda, talla);
+      html += `
+        <tr data-group="${groupId}" style="display:none;background:rgba(0,0,0,0.025)">
+          <td style="padding-left:28px;color:var(--muted);font-size:0.75rem;border-left:3px solid var(--border)">↳</td>
+          <td style="font-size:0.82rem;color:var(--muted)">${prenda}</td>
+          <td style="text-align:center;font-weight:800;color:var(--accent)">${talla}</td>
+          <td style="font-weight:800;color:${costo > 0 ? 'var(--text)' : 'var(--red)'}">${costo > 0 ? `$${fmt(costo)}` : '—'}</td>
+          <td><span style="font-family:monospace;font-size:0.68rem;color:var(--muted)">${skuEtq}</span></td><td></td>
+          <td><button class="btn btn-secondary" style="padding:4px 10px;font-size:0.75rem;white-space:nowrap;border-color:rgba(240,165,0,0.4);color:var(--accent)" onclick="event.stopPropagation();abrirEtiqueta('${esc(colegio)}','${esc(prenda)}','${esc(talla)}',${costo})">🏷️ Etiqueta</button></td>
+        </tr>`;
+    });
+  });
+
+  tbody.innerHTML = html;
+
+  if (_catalogoAbiertos.size > 0) {
+    let idx2 = 0;
+    grupos.forEach(({ colegio, prenda }) => {
+      const key = `${colegio} — ${prenda}`;
+      const gId = `g${idx2++}`;
+      if (_catalogoAbiertos.has(key)) {
+        const hijas = document.querySelectorAll(`tr[data-group="${gId}"]`);
+        const chevron = document.getElementById(`chev-${gId}`);
+        hijas.forEach(tr => { tr.style.display = 'table-row'; });
+        if (chevron) chevron.textContent = '▼';
+      }
+    });
+  }
+
+  const total = grupos.size;
+  if (countEl) countEl.textContent = `${total} producto${total !== 1 ? 's' : ''}`;
+}
+
+function irAReceta(colegio, prenda) { switchTab('recetas'); const selColegio = document.getElementById('r-colegio'); if (selColegio) { selColegio.value = colegio; onColegioChange(); } const selPrenda = document.getElementById('r-prenda'); if (selPrenda) { selPrenda.value = prenda; document.getElementById('r-producto').value = `${colegio} — ${prenda}`; } intentarCargarReceta(colegio, prenda); }
+function limpiarFiltrosCatalogo() { const sc = document.getElementById('cat-filtro-colegio'); const st = document.getElementById('cat-filtro-talla'); if (sc) sc.value = ''; if (st) st.value = ''; renderCatalogo(); }
+function poblarSelectColegio() { const sel = document.getElementById('r-colegio'); if (!sel) return; const colegios = [...new Set(preciosMatriz.map(r => r.COLEGIO).filter(Boolean))].sort(); sel.innerHTML = '<option value="">— Seleccionar Colegio —</option>' + colegios.map(c => `<option value="${c}">${c}</option>`).join(''); document.getElementById('r-prenda').innerHTML = '<option value="">— Seleccionar Artículo —</option>'; }
+function onColegioChange() { const colegio = document.getElementById('r-colegio').value; const selPrenda = document.getElementById('r-prenda'); document.getElementById('r-producto').value = ''; if (!colegio) { selPrenda.innerHTML = '<option value="">— Seleccionar Artículo —</option>'; calcularCostoTotalReceta(); return; } const prendas = [...new Set(preciosMatriz.filter(r => r.COLEGIO === colegio).map(r => r.PRENDA).filter(Boolean))].sort(); selPrenda.innerHTML = '<option value="">— Seleccionar Artículo —</option>' + prendas.map(p => `<option value="${p}">${p}</option>`).join(''); calcularCostoTotalReceta(); }
+function onPrendaChange() { const colegio = document.getElementById('r-colegio').value; const prenda = document.getElementById('r-prenda').value; document.getElementById('r-producto').value = prenda ? `${colegio} — ${prenda}` : ''; if (colegio && prenda) { intentarCargarReceta(colegio, prenda); } else { calcularCostoTotalReceta(); } }
+function intentarCargarReceta(colegio, prenda) { const producto = `${colegio} — ${prenda}`; const filas = recetasCSV.filter(r => r.producto === producto); const btnMaq = document.getElementById('btn-maqueta'); if (filas.length > 0) { cargarRecetaDesdeMemoria(filas); if (btnMaq) { btnMaq.textContent = '✏️ Modo Edición'; btnMaq.style.opacity = '0.5'; } toast(`✅ Receta cargada: ${producto}`, 'ok'); } else { cargarRecetaTipo(prenda); if (btnMaq) { btnMaq.style.opacity = '1'; } } }
+function cargarRecetaDesdeMemoria(filas) { matrizTallas = {}; TALLAS_REC.forEach(t => { matrizTallas[t] = []; }); const porTalla = {}; filas.forEach(f => { const t = f.talla || f.TALLA; if (!t) return; if (!porTalla[t]) porTalla[t] = []; porTalla[t].push(f); }); Object.entries(porTalla).forEach(([talla, lineasCSV]) => { if (!matrizTallas[talla]) matrizTallas[talla] = []; matrizTallas[talla] = lineasCSV.map(f => { const idx = insumos.findIndex(ins => ins.id_insumo === f.id_insumo); const pmp = idx >= 0 ? (sanitizarCosto(insumos[idx].costo_pmp) || 0) : (sanitizarCosto(f.costo_unitario_pmp) || 0); const cantNeta = parseFloat(f.cantidad) || 0; const merma = parseFloat(f.merma_pct) || 0; const cantBruta = +(cantNeta * (1 + merma / 100)).toFixed(4); return { nombre: f.nombre_insumo, id_insumo: f.id_insumo, insumo_idx: idx, categoria: idx >= 0 ? insumos[idx].categoria : '', unidad: f.unidad, cant_base: null, cant_neta: cantNeta, merma, cant_bruta: cantBruta, pmp, costo_linea: +(cantBruta * pmp).toFixed(0), tipo: f.tipo_componente || catToTipo(idx >= 0 ? insumos[idx].categoria : '') }; }); }); recetaActiva = matrizTallas[tallaActiva] ?? []; const idRec = filas[0]?.id_receta || 'REC-EDIT'; document.getElementById('r-id').value = idRec; renderRecetaActiva(); calcularCostoTotalReceta(); }
+
+function generarSKU(colegio, prenda, talla) { const slug = s => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().replace(/[^A-Z0-9\s]/g, '').trim().split(/\s+/).map(w => w.slice(0, 3)).join(''); const c = slug(colegio).slice(0, 3); const p = slug(prenda).slice(0, 3); const t = talla.toString().toUpperCase().replace(/\s+/g, '').slice(0, 4); return `${c}-${p}-T${t}`; }
+function abrirEtiqueta(colegio, prenda, talla, costo) {
+  const sku = generarSKU(colegio, prenda, talla); const costoFmt = costo > 0 ? `$${fmt(costo)}` : 'Sin costo';
+  document.getElementById('etq-colegio').textContent = colegio; document.getElementById('etq-prenda').textContent = prenda; document.getElementById('etq-talla').textContent = talla; document.getElementById('etq-costo').textContent = costoFmt; document.getElementById('etq-sku').textContent = `SKU: ${sku}`;
+  try { JsBarcode('#barcode', sku, { format: 'CODE128', lineColor: '#000000', background: '#ffffff', width: 2, height: 48, displayValue: true, fontSize: 11, margin: 6, font: 'monospace' }); } catch(e) { console.warn('JsBarcode error:', e); }
+  try { const qrCanvas = document.getElementById('qrcode'); new QRious({ element: qrCanvas, value: `SKU:${sku}|PRECIO:${costo}|PRENDA:${prenda}|COLEGIO:${colegio}|TALLA:${talla}`, size: 96, background: '#ffffff', foreground: '#000000', level: 'M' }); } catch(e) { console.warn('QRious error:', e); }
+  const radios = document.querySelectorAll('input[name="etq-formato"]'); radios.forEach(r => { r.checked = (r.value === 'ambos'); }); aplicarFormatoEtiqueta('ambos');
+  document.getElementById('overlay-etiqueta').classList.add('open');
+}
+function aplicarFormatoEtiqueta(valor) { const barcodeWrap = document.getElementById('etq-barcode-wrap'); const qrWrap = document.getElementById('etq-qr-wrap'); if (!barcodeWrap || !qrWrap) return; barcodeWrap.style.display = (valor === 'qr') ? 'none' : 'flex'; qrWrap.style.display = (valor === 'barcode') ? 'none' : 'flex'; }
+
+function imprimirEtiquetas() {
+  const copias = Math.max(1, parseInt(document.getElementById('etq-copias').value) || 1);
+  if (copias === 1) { window.print(); return; }
+  const base    = document.getElementById('etiqueta-print-area');
+  const estilos = Array.from(document.styleSheets).map(ss => {
+    try { return Array.from(ss.cssRules).map(r => r.cssText).join('\n'); } catch(e) { return ''; }
+  }).join('\n');
+  const w = window.open('', '_blank', 'width=400,height=600');
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><style>
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:#fff;}
+    .etiqueta-wrap{width:72mm;margin:0 auto;page-break-after:always;}
+    .etiqueta-wrap:last-child{page-break-after:avoid;}
+    .no-print,.etiqueta-footer,.etiqueta-formato{display:none!important;}
+    ${estilos}
+    @page{size:72mm auto;margin:0;}
+  </style></head><body>`);
+  for (let i = 0; i < copias; i++) {
+    w.document.write(`<div class="etiqueta-wrap">${base.innerHTML}</div>`);
+  }
+  w.document.write('</body></html>');
+  w.document.close();
+  w.onload = () => { w.focus(); w.print(); };
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const hoy = new Date().toISOString().split('T')[0]; const fc = document.getElementById('c-fecha'); if (fc) fc.value = hoy;
+  fetch('vma_insumos.csv').then(r => { if (!r.ok) throw new Error(); return r.text(); }).then(csv => { parsearInsumos(csv); const btn = document.getElementById('btn-reimportar'); if (btn) btn.style.display = 'none'; }).catch(() => { const btn = document.getElementById('btn-reimportar'); if (btn) { btn.textContent = '⚠️ Cargar CSV manualmente'; btn.classList.replace('btn-secondary', 'btn-primary'); } console.warn('vma_insumos.csv no encontrado'); });
+  fetch('vma_precios_matriz.csv').then(r => { if (!r.ok) throw new Error(); return r.text(); }).then(csv => { Papa.parse(csv, { header: true, skipEmptyLines: true, complete: res => { preciosMatriz = res.data.map(r => ({ ...r, COSTO: sanitizarCosto(r.COSTO) })); poblarSelectColegio(); poblarFiltrosCatalogo(); renderCatalogo(); const status = document.getElementById('csv-status'); if (status) { const base = status.textContent; status.textContent = `${base}${base ? ' · ' : ''}matriz: ${preciosMatriz.length} filas`; } } }); }).catch(() => console.warn('vma_precios_matriz.csv no encontrado.'));
+  fetch('vma_recetas.csv').then(r => { if (!r.ok) throw new Error(); return r.text(); }).then(csv => { Papa.parse(csv, { header: true, skipEmptyLines: true, complete: res => { recetasCSV = res.data; renderCatalogo(); const status = document.getElementById('csv-status'); if (status) { status.textContent = `${status.textContent} · recetas: ${recetasCSV.length}`; } } }); }).catch(() => console.warn('vma_recetas.csv no encontrado.'));
+});
+</script>
+</body>
+</html>

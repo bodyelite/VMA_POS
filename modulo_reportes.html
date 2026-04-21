@@ -1,0 +1,745 @@
+<!--
+  ╔══════════════════════════════════════════════════════════════════╗
+  ║  VMA CORE · MÓDULO DE REPORTES GERENCIALES                      ║
+  ║  INSTRUCCIONES DE INTEGRACIÓN:                                   ║
+  ║  1. En el <head>, agrega el tag <script> de Chart.js (ver abajo) ║
+  ║  2. Reemplaza el <div id="view-reportes">...</div> existente     ║
+  ║     con el bloque HTML de este archivo.                          ║
+  ║  3. Pega el bloque <script> ANTES del cierre </body>.            ║
+  ╚══════════════════════════════════════════════════════════════════╝
+
+  ─── PASO 1: Agrega en el <head> del vma_pos.html ───
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+-->
+
+<!-- ═══════════════════════════════════════════════════
+     BLOQUE HTML: reemplaza el div#view-reportes actual
+     ═══════════════════════════════════════════════════ -->
+<div id="view-reportes" class="view-wrapper">
+
+  <!-- BARRA DE CONTROL GLOBAL -->
+  <div style="background:var(--s1);border-bottom:1px solid var(--s2);padding:10px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <i class="fa-solid fa-calendar-range" style="color:var(--ac);"></i>
+      <label class="lbl" style="margin:0;white-space:nowrap;">Desde</label>
+      <input type="date" id="rpt-desde" class="in" style="width:145px;padding:6px 10px;font-size:13px;">
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <label class="lbl" style="margin:0;white-space:nowrap;">Hasta</label>
+      <input type="date" id="rpt-hasta" class="in" style="width:145px;padding:6px 10px;font-size:13px;">
+    </div>
+    <button onclick="renderReportes()" style="padding:7px 18px;background:var(--ac);border:none;border-radius:6px;color:#fff;font-weight:800;cursor:pointer;font-size:13px;display:flex;align-items:center;gap:6px;">
+      <i class="fa-solid fa-magnifying-glass-chart"></i> ACTUALIZAR
+    </button>
+    <button onclick="exportarCSV()" style="padding:7px 18px;background:var(--gr);border:none;border-radius:6px;color:#000;font-weight:800;cursor:pointer;font-size:13px;display:flex;align-items:center;gap:6px;margin-left:auto;">
+      <i class="fa-solid fa-file-csv"></i> EXPORTAR CSV
+    </button>
+  </div>
+
+  <!-- TABS DE NAVEGACIÓN -->
+  <div style="background:var(--s1);border-bottom:2px solid var(--s2);padding:0 20px;display:flex;gap:0;">
+    <button class="rpt-tab active" data-tab="caja"    onclick="switchTab('caja')"   ><i class="fa-solid fa-cash-register"></i> Cuadratura de Caja</button>
+    <button class="rpt-tab"        data-tab="ventas"  onclick="switchTab('ventas')" ><i class="fa-solid fa-chart-bar"></i> Rendimiento</button>
+    <button class="rpt-tab"        data-tab="stock"   onclick="switchTab('stock')"  ><i class="fa-solid fa-triangle-exclamation"></i> Stock Crítico</button>
+    <button class="rpt-tab"        data-tab="margen"  onclick="switchTab('margen')" ><i class="fa-solid fa-percent"></i> Simulador de Margen</button>
+  </div>
+
+  <!-- ÁREA DE CONTENIDO SCROLLEABLE -->
+  <div style="flex:1;overflow-y:auto;padding:20px;background:var(--bg);">
+
+    <!-- ── TAB A: CUADRATURA DE CAJA ────────────────── -->
+    <div id="tab-caja" class="rpt-panel active">
+      <!-- KPI Row -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:20px;">
+        <div class="rpt-kpi-card">
+          <span class="rpt-kpi-label"><i class="fa-solid fa-sack-dollar"></i> TOTAL VENDIDO</span>
+          <span class="rpt-kpi-value" id="kpi-total" style="color:var(--gr);">$0</span>
+        </div>
+        <div class="rpt-kpi-card">
+          <span class="rpt-kpi-label"><i class="fa-solid fa-receipt"></i> NOTAS EMITIDAS</span>
+          <span class="rpt-kpi-value" id="kpi-notas" style="color:var(--ac);">0</span>
+        </div>
+        <div class="rpt-kpi-card">
+          <span class="rpt-kpi-label"><i class="fa-solid fa-shirt"></i> UNIDADES VENDIDAS</span>
+          <span class="rpt-kpi-value" id="kpi-units" style="color:var(--ye);">0</span>
+        </div>
+        <div class="rpt-kpi-card">
+          <span class="rpt-kpi-label"><i class="fa-solid fa-arrow-trend-up"></i> TICKET PROMEDIO</span>
+          <span class="rpt-kpi-value" id="kpi-ticket" style="color:var(--t2);">$0</span>
+        </div>
+      </div>
+
+      <!-- Charts row -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
+        <div class="section-card">
+          <div class="lbl" style="margin-bottom:12px;"><i class="fa-solid fa-chart-pie"></i> MÉTODOS DE PAGO</div>
+          <div style="position:relative;height:240px;display:flex;align-items:center;justify-content:center;">
+            <canvas id="chart-pago"></canvas>
+          </div>
+        </div>
+        <div class="section-card">
+          <div class="lbl" style="margin-bottom:12px;"><i class="fa-solid fa-table-list"></i> DESGLOSE POR MÉTODO</div>
+          <table class="rpt-table" id="tabla-metodos">
+            <thead><tr><th>Método</th><th>Notas</th><th style="text-align:right;">Monto</th><th style="text-align:right;">%</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TAB B: RENDIMIENTO Y VENTAS ──────────────── -->
+    <div id="tab-ventas" class="rpt-panel">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
+        <div class="section-card">
+          <div class="lbl" style="margin-bottom:12px;"><i class="fa-solid fa-fire"></i> TOP PRODUCTOS (UNIDADES)</div>
+          <div style="position:relative;height:300px;">
+            <canvas id="chart-productos"></canvas>
+          </div>
+        </div>
+        <div class="section-card">
+          <div class="lbl" style="margin-bottom:12px;"><i class="fa-solid fa-medal"></i> RANKING DE VENDEDORES</div>
+          <div id="ranking-vendedores"></div>
+        </div>
+      </div>
+      <div class="section-card">
+        <div class="lbl" style="margin-bottom:12px;"><i class="fa-solid fa-list-ol"></i> DETALLE DE VENTAS EN PERÍODO</div>
+        <div style="overflow-x:auto;">
+          <table class="rpt-table" id="tabla-ventas-detalle">
+            <thead><tr><th>Folio</th><th>Fecha</th><th>Vendedor</th><th>Cliente</th><th>Método Pago</th><th style="text-align:right;">Total</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TAB C: STOCK CRÍTICO ──────────────────────── -->
+    <div id="tab-stock" class="rpt-panel">
+      <div class="section-card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+          <div class="lbl"><i class="fa-solid fa-triangle-exclamation" style="color:var(--re);"></i> PRODUCTOS CON STOCK INFERIOR A 5 UNIDADES</div>
+          <span id="stock-critico-count" style="background:var(--re);color:#fff;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:800;">0 alertas</span>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="rpt-table" id="tabla-stock-critico">
+            <thead><tr><th>Colegio</th><th>Prenda</th><th>Talla</th><th style="text-align:center;">Stock</th><th>Estado</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TAB D: SIMULADOR DE MARGEN ───────────────── -->
+    <div id="tab-margen" class="rpt-panel">
+      <div class="section-card" style="margin-bottom:16px;background:rgba(59,130,246,0.08);border-color:var(--ac);">
+        <p style="font-size:13px;color:var(--t2);"><i class="fa-solid fa-circle-info" style="color:var(--ac);"></i> Ingresa el <strong>Costo de Compra</strong> en cada fila. Los márgenes se calculan automáticamente. Los valores se guardan en tu navegador.</p>
+      </div>
+      <div class="section-card">
+        <div style="display:flex;gap:12px;margin-bottom:14px;align-items:center;">
+          <div class="lbl" style="margin:0;"><i class="fa-solid fa-calculator"></i> SIMULADOR DE MARGEN OPERACIONAL</div>
+          <select id="margen-filtro-colegio" class="in" style="width:200px;padding:5px 10px;font-size:12px;" onchange="filtrarTablaMargen()">
+            <option value="">Todos los colegios</option>
+          </select>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="rpt-table" id="tabla-margen">
+            <thead>
+              <tr>
+                <th>Colegio</th>
+                <th>Prenda</th>
+                <th>Talla</th>
+                <th style="text-align:right;">Precio Venta</th>
+                <th style="text-align:center;min-width:130px;">Costo Compra ($)</th>
+                <th style="text-align:right;">Margen $</th>
+                <th style="text-align:right;">Margen %</th>
+              </tr>
+            </thead>
+            <tbody id="margen-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content area -->
+</div>
+<!-- ═══════════════════════════════════════ FIN BLOQUE HTML ═══════ -->
+
+
+<!-- ═══════════════════════════════════════════════════════════════
+     BLOQUE <script>: pega ANTES del cierre </body> en vma_pos.html
+     ═══════════════════════════════════════════════════════════════ -->
+<style>
+/* ─── ESTILOS EXCLUSIVOS DEL MÓDULO REPORTES ─── */
+.rpt-tab {
+  padding: 12px 20px;
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: var(--t2);
+  font-weight: 700;
+  font-size: 12px;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.rpt-tab:hover { color: var(--tx); background: rgba(255,255,255,0.05); }
+.rpt-tab.active { color: var(--ac); border-bottom-color: var(--ac); background: rgba(59,130,246,0.08); }
+
+.rpt-panel { display: none; }
+.rpt-panel.active { display: block; }
+
+.rpt-kpi-card {
+  background: var(--s1);
+  border: 1px solid var(--s2);
+  border-radius: 10px;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+}
+.rpt-kpi-label {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--t2);
+  letter-spacing: 0.8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.rpt-kpi-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 32px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.rpt-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.rpt-table th {
+  background: var(--s2);
+  padding: 9px 12px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--t2);
+  letter-spacing: 0.5px;
+  position: sticky;
+  top: 0;
+}
+.rpt-table td {
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--s2);
+  font-weight: 600;
+}
+.rpt-table tr:hover td { background: rgba(255,255,255,0.03); }
+
+.rpt-badge-critico {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.rpt-vendedor-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.rpt-bar-bg {
+  flex: 1;
+  height: 28px;
+  background: var(--s2);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.rpt-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--ac), var(--gr));
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  padding-left: 10px;
+  font-size: 12px;
+  font-weight: 800;
+  color: #fff;
+  transition: width 0.6s ease;
+  min-width: 40px;
+}
+.rpt-input-costo {
+  width: 120px;
+  padding: 5px 8px;
+  background: var(--bg);
+  border: 1px solid #475569;
+  border-radius: 5px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: right;
+  font-family: 'JetBrains Mono', monospace;
+}
+.rpt-input-costo:focus { border-color: var(--ac); outline: none; box-shadow: 0 0 0 2px rgba(59,130,246,0.3); }
+</style>
+
+<script>
+/* ════════════════════════════════════════════════════════════
+   VMA REPORTES GERENCIALES · Módulo autónomo
+   ════════════════════════════════════════════════════════════ */
+(function() {
+
+  // ── Estado y caché ──
+  let _ventasCache = [];
+  let _stockCache  = {};
+  let _preciosData = []; // [{colegio, prenda, talla, precio}]
+  let _chartPago     = null;
+  let _chartProductos = null;
+  let _margenRows = []; // todos los rows para filtro
+
+  // ── Inicialización de fechas por defecto (mes actual) ──
+  function initFechas() {
+    const hoy   = new Date();
+    const desde = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+    document.getElementById('rpt-desde').value = fmtDate(desde);
+    document.getElementById('rpt-hasta').value  = fmtDate(hoy);
+  }
+
+  function fmtDate(d) {
+    return d.toISOString().split('T')[0];
+  }
+
+  // ── Formateador de pesos CLP ──
+  function clp(n) {
+    return '$' + Math.round(n).toLocaleString('es-CL');
+  }
+
+  // ── Switch de tabs ──
+  window.switchTab = function(tab) {
+    document.querySelectorAll('.rpt-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+    document.querySelectorAll('.rpt-panel').forEach(p => p.classList.toggle('active', p.id === 'tab-' + tab));
+  };
+
+  // ── Render principal ──
+  window.renderReportes = async function() {
+    try {
+      const nc = '?_=' + Date.now();
+      const [ventasRes, stockRes] = await Promise.all([
+        fetch('/api/ventas' + nc).then(r => r.json()).catch(() => []),
+        fetch('/api/stock'  + nc).then(r => r.json()).catch(() => ({}))
+      ]);
+      _ventasCache = Array.isArray(ventasRes) ? ventasRes : [];
+      _stockCache  = (stockRes && typeof stockRes === 'object') ? stockRes : {};
+
+      const desde = new Date(document.getElementById('rpt-desde').value + 'T00:00:00');
+      const hasta = new Date(document.getElementById('rpt-hasta').value  + 'T23:59:59');
+
+      const ventas = _ventasCache.filter(v => {
+        const ts = new Date(v.timestamp);
+        return ts >= desde && ts <= hasta;
+      });
+
+      renderCaja(ventas);
+      renderVentas(ventas);
+      renderStockCritico();
+      // margen sólo se carga una vez con los precios
+      if (_preciosData.length === 0) await cargarPrecios();
+      renderMargen();
+
+    } catch(e) {
+      console.error('[VMA Reportes] Error:', e);
+    }
+  };
+
+  // ─────────────────────────────────────────────────────────
+  //  A) CUADRATURA DE CAJA
+  // ─────────────────────────────────────────────────────────
+  function renderCaja(ventas) {
+    let total = 0, unidades = 0;
+    const metodos = {};
+
+    ventas.forEach(v => {
+      // Calcular total de la venta
+      let vtotal = 0;
+      if (typeof v.total === 'number') {
+        vtotal = v.total;
+      } else if (v.items) {
+        // items puede ser array u objeto
+        const arr = Array.isArray(v.items) ? v.items : Object.values(v.items);
+        arr.forEach(i => {
+          const qty   = i.qty || i.cantidad || 0;
+          const price = i.precio || 0;
+          vtotal += qty * price;
+          unidades += parseInt(qty);
+        });
+      }
+      total += vtotal;
+
+      // Unidades cuando total ya está calculado (items sin precio)
+      if (typeof v.total === 'number' && v.items) {
+        const arr = Array.isArray(v.items) ? v.items : Object.values(v.items);
+        arr.forEach(i => { unidades += parseInt(i.qty || i.cantidad || 0); });
+      }
+
+      // Método de pago
+      const mp = v.metodoPago || v.metodo_pago || 'Sin datos';
+      if (!metodos[mp]) metodos[mp] = { count: 0, monto: 0 };
+      metodos[mp].count++;
+      metodos[mp].monto += vtotal;
+    });
+
+    // KPIs
+    document.getElementById('kpi-total').innerText  = clp(total);
+    document.getElementById('kpi-notas').innerText  = ventas.length;
+    document.getElementById('kpi-units').innerText  = unidades;
+    document.getElementById('kpi-ticket').innerText = ventas.length ? clp(total / ventas.length) : '$0';
+
+    // Tabla desglose
+    const tbody = document.querySelector('#tabla-metodos tbody');
+    tbody.innerHTML = '';
+    Object.entries(metodos).sort((a,b) => b[1].monto - a[1].monto).forEach(([mp, d]) => {
+      const pct = total ? ((d.monto / total) * 100).toFixed(1) : 0;
+      tbody.insertAdjacentHTML('beforeend', `
+        <tr>
+          <td><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${colorMetodo(mp)};margin-right:6px;"></span>${mp}</td>
+          <td>${d.count}</td>
+          <td style="text-align:right;font-family:'JetBrains Mono';">${clp(d.monto)}</td>
+          <td style="text-align:right;color:var(--t2);">${pct}%</td>
+        </tr>`);
+    });
+    if (!Object.keys(metodos).length) {
+      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--t2);">Sin ventas en el período</td></tr>';
+    }
+
+    // Gráfico torta
+    const labels  = Object.keys(metodos);
+    const valores  = labels.map(k => metodos[k].monto);
+    const colores  = labels.map(k => colorMetodo(k));
+    if (_chartPago) _chartPago.destroy();
+    const ctx = document.getElementById('chart-pago').getContext('2d');
+    _chartPago = new Chart(ctx, {
+      type: 'doughnut',
+      data: { labels, datasets: [{ data: valores, backgroundColor: colores, borderColor: 'var(--s1)', borderWidth: 3 }] },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'bottom', labels: { color: '#cbd5e1', font: { size: 12, weight: '700' }, padding: 16 } },
+          tooltip: { callbacks: { label: ctx => ` ${clp(ctx.parsed)} (${((ctx.parsed / valores.reduce((a,b)=>a+b,0))*100).toFixed(1)}%)` } }
+        },
+        cutout: '60%'
+      }
+    });
+  }
+
+  function colorMetodo(mp) {
+    const map = { 'Débito':'#3b82f6','Crédito':'#a855f7','Efectivo':'#10b981','Transferencia':'#f59e0b' };
+    return map[mp] || '#64748b';
+  }
+
+  // ─────────────────────────────────────────────────────────
+  //  B) RENDIMIENTO Y VENTAS
+  // ─────────────────────────────────────────────────────────
+  function renderVentas(ventas) {
+    const productos = {};
+    const vendedores = {};
+
+    ventas.forEach(v => {
+      // Vendedor
+      const vend = v.vendedor || 'Desconocido';
+      if (!vendedores[vend]) vendedores[vend] = { monto: 0, notas: 0 };
+      vendedores[vend].notas++;
+      if (typeof v.total === 'number') vendedores[vend].monto += v.total;
+
+      // Productos
+      const arr = Array.isArray(v.items) ? v.items : Object.values(v.items || {});
+      arr.forEach(i => {
+        const key   = `${i.colegio||'?'} · ${i.prenda||'?'} ${i.talla||''}`.trim();
+        const qty   = parseInt(i.qty || i.cantidad || 0);
+        const monto = qty * (i.precio || 0);
+        if (!productos[key]) productos[key] = { qty: 0, monto: 0 };
+        productos[key].qty   += qty;
+        productos[key].monto += monto;
+        if (typeof v.total === 'number' && !i.precio) {
+          // sólo suma monto al vendedor cuando viene el total global
+        } else {
+          vendedores[vend].monto += monto;
+        }
+      });
+    });
+
+    // Limpiar doble conteo de monto vendedor
+    ventas.forEach(v => {
+      if (typeof v.total !== 'number') return;
+      const vend = v.vendedor || 'Desconocido';
+      // ya fue sumado
+    });
+
+    // Top 10 productos
+    const topProd = Object.entries(productos).sort((a,b) => b[1].qty - a[1].qty).slice(0, 10);
+    if (_chartProductos) _chartProductos.destroy();
+    const ctx2 = document.getElementById('chart-productos').getContext('2d');
+    _chartProductos = new Chart(ctx2, {
+      type: 'bar',
+      data: {
+        labels: topProd.map(([k]) => k.length > 28 ? k.slice(0,28)+'…' : k),
+        datasets: [{
+          label: 'Unidades',
+          data: topProd.map(([,v]) => v.qty),
+          backgroundColor: 'rgba(59,130,246,0.7)',
+          borderColor: '#3b82f6',
+          borderWidth: 1,
+          borderRadius: 4
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        indexAxis: 'y',
+        plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => ` ${c.parsed.x} unidades` } } },
+        scales: {
+          x: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } },
+          y: { ticks: { color: '#cbd5e1', font: { size: 11 } }, grid: { display: false } }
+        }
+      }
+    });
+
+    // Ranking vendedores
+    const rankEl = document.getElementById('ranking-vendedores');
+    const topVend = Object.entries(vendedores).sort((a,b) => b[1].notas - a[1].notas);
+    const maxNotas = topVend[0]?.[1]?.notas || 1;
+    rankEl.innerHTML = topVend.length === 0
+      ? '<p style="color:var(--t2);padding:20px;text-align:center;">Sin datos en el período</p>'
+      : topVend.map(([nombre, d], idx) => `
+        <div class="rpt-vendedor-bar">
+          <span style="width:22px;height:22px;background:var(--s2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0;">${idx+1}</span>
+          <div style="flex:1;">
+            <div style="font-size:12px;font-weight:700;margin-bottom:4px;">${nombre}</div>
+            <div class="rpt-bar-bg">
+              <div class="rpt-bar-fill" style="width:${Math.round((d.notas/maxNotas)*100)}%;">${d.notas} notas</div>
+            </div>
+          </div>
+        </div>`).join('');
+
+    // Tabla detalle ventas
+    const tbody = document.querySelector('#tabla-ventas-detalle tbody');
+    tbody.innerHTML = ventas.length === 0
+      ? '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--t2);">Sin ventas en el período</td></tr>'
+      : ventas.slice().reverse().map(v => `
+        <tr>
+          <td style="font-family:'JetBrains Mono';color:var(--ac);font-size:12px;">${v.folio||'-'}</td>
+          <td style="color:var(--t2);font-size:12px;">${v.fecha || (v.timestamp ? new Date(v.timestamp).toLocaleDateString('es-CL') : '-')}</td>
+          <td>${v.vendedor||'-'}</td>
+          <td style="color:var(--t2);">${v.cliente||'Anónimo'}</td>
+          <td><span style="padding:2px 8px;background:${colorMetodo(v.metodoPago)+'33'};border-radius:4px;font-size:11px;font-weight:800;color:${colorMetodo(v.metodoPago)};">${v.metodoPago||'-'}</span></td>
+          <td style="text-align:right;font-family:'JetBrains Mono';color:var(--gr);">${typeof v.total === 'number' ? clp(v.total) : '-'}</td>
+        </tr>`).join('');
+  }
+
+  // ─────────────────────────────────────────────────────────
+  //  C) STOCK CRÍTICO
+  // ─────────────────────────────────────────────────────────
+  function renderStockCritico() {
+    const UMBRAL = 5;
+    const criticos = Object.entries(_stockCache)
+      .filter(([, qty]) => qty < UMBRAL)
+      .sort((a, b) => a[1] - b[1]);
+
+    document.getElementById('stock-critico-count').innerText = `${criticos.length} alertas`;
+
+    const tbody = document.querySelector('#tabla-stock-critico tbody');
+    if (!criticos.length) {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:30px;color:var(--gr);font-weight:700;"><i class="fa-solid fa-circle-check"></i> ¡Todo el stock está en niveles normales!</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = criticos.map(([key, qty]) => {
+      const [colegio, prenda, talla] = key.split('||');
+      const esCero = qty === 0;
+      const color  = esCero ? 'var(--re)' : '#f97316';
+      const badge  = esCero
+        ? `<span class="rpt-badge-critico" style="background:rgba(255,77,79,0.2);color:var(--re);">AGOTADO</span>`
+        : `<span class="rpt-badge-critico" style="background:rgba(249,115,22,0.2);color:#f97316;">CRÍTICO</span>`;
+      return `<tr>
+        <td style="font-weight:800;">${colegio||'?'}</td>
+        <td>${prenda||'?'}</td>
+        <td style="font-family:'JetBrains Mono';">${talla||'?'}</td>
+        <td style="text-align:center;font-family:'JetBrains Mono';font-size:22px;font-weight:900;color:${color};">${qty}</td>
+        <td>${badge}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  // ─────────────────────────────────────────────────────────
+  //  D) SIMULADOR DE MARGEN
+  // ─────────────────────────────────────────────────────────
+  async function cargarPrecios() {
+    try {
+      const nc = '?_=' + Date.now();
+      const csv = await fetch('vma_precios_matriz.csv' + nc).then(r => r.text());
+      const lines = csv.trim().split('\n');
+      const headers = lines[0].split(',').map(h => h.trim());
+      const tallas  = headers.slice(2); // T3, T4, T6 ...
+
+      _preciosData = [];
+      lines.slice(1).forEach(line => {
+        const cols = line.split(',').map(c => c.trim());
+        const colegio = cols[0];
+        const prenda  = cols[1];
+        tallas.forEach((tal, idx) => {
+          const raw = cols[2 + idx];
+          if (!raw || raw === '' || raw.toUpperCase() === 'NO') return;
+          const precio = parseInt(raw);
+          if (!isNaN(precio) && precio > 0) {
+            _preciosData.push({ colegio, prenda, talla: tal, precio });
+          }
+        });
+      });
+
+      // Poblar filtro de colegios
+      const colegios = [...new Set(_preciosData.map(r => r.colegio))];
+      const sel = document.getElementById('margen-filtro-colegio');
+      sel.innerHTML = '<option value="">Todos los colegios</option>';
+      colegios.forEach(c => sel.insertAdjacentHTML('beforeend', `<option value="${c}">${c}</option>`));
+    } catch(e) {
+      console.warn('[VMA Reportes] No se pudo cargar vma_precios_matriz.csv', e);
+    }
+  }
+
+  function renderMargen() {
+    const LS_KEY = 'vma_costos';
+    let costos = {};
+    try { costos = JSON.parse(localStorage.getItem(LS_KEY) || '{}'); } catch(e) {}
+
+    _margenRows = _preciosData;
+    pintarTablaMargen(_margenRows, costos, LS_KEY);
+  }
+
+  window.filtrarTablaMargen = function() {
+    const col = document.getElementById('margen-filtro-colegio').value;
+    const rows = col ? _margenRows.filter(r => r.colegio === col) : _margenRows;
+    const LS_KEY = 'vma_costos';
+    let costos = {};
+    try { costos = JSON.parse(localStorage.getItem(LS_KEY) || '{}'); } catch(e) {}
+    pintarTablaMargen(rows, costos, LS_KEY);
+  };
+
+  function pintarTablaMargen(rows, costos, LS_KEY) {
+    const tbody = document.getElementById('margen-tbody');
+    tbody.innerHTML = rows.map(r => {
+      const rowKey = `${r.colegio}||${r.prenda}||${r.talla}`;
+      const costo  = costos[rowKey] || '';
+      const [mPesos, mPct, mColor] = calcMargen(r.precio, costo);
+      return `<tr id="mrow-${CSS.escape(rowKey)}">
+        <td style="font-weight:800;font-size:12px;">${r.colegio}</td>
+        <td style="font-size:12px;">${r.prenda}</td>
+        <td style="font-family:'JetBrains Mono';text-align:center;font-size:12px;">${r.talla}</td>
+        <td style="text-align:right;font-family:'JetBrains Mono';color:var(--gr);">${clp(r.precio)}</td>
+        <td style="text-align:center;">
+          <input class="rpt-input-costo" type="number" min="0" step="100"
+            value="${costo}"
+            data-key="${rowKey}"
+            oninput="actualizarMargenRow(this,'${LS_KEY}')"
+            placeholder="0">
+        </td>
+        <td class="mrow-pesos-${CSS.escape(rowKey)}" style="text-align:right;font-family:'JetBrains Mono';font-weight:800;color:${mColor};">${mPesos}</td>
+        <td class="mrow-pct-${CSS.escape(rowKey)}"   style="text-align:right;font-family:'JetBrains Mono';font-weight:800;color:${mColor};">${mPct}</td>
+      </tr>`;
+    }).join('') || '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--t2);">Sin datos de precios cargados</td></tr>';
+  }
+
+  window.actualizarMargenRow = function(input, LS_KEY) {
+    const key   = input.dataset.key;
+    const costo = parseFloat(input.value) || 0;
+    const precio = _preciosData.find(r => `${r.colegio}||${r.prenda}||${r.talla}` === key)?.precio || 0;
+
+    // Guardar en localStorage
+    let costos = {};
+    try { costos = JSON.parse(localStorage.getItem(LS_KEY) || '{}'); } catch(e) {}
+    costos[key] = costo;
+    localStorage.setItem(LS_KEY, JSON.stringify(costos));
+
+    // Actualizar celdas de la misma fila
+    const escaped = CSS.escape(key);
+    const [mPesos, mPct, mColor] = calcMargen(precio, costo);
+    document.querySelectorAll(`.mrow-pesos-${escaped}`).forEach(el => { el.innerText = mPesos; el.style.color = mColor; });
+    document.querySelectorAll(`.mrow-pct-${escaped}`).forEach(el => { el.innerText = mPct;   el.style.color = mColor; });
+  };
+
+  function calcMargen(precio, costoRaw) {
+    const costo = parseFloat(costoRaw) || 0;
+    if (!costo) return ['—', '—', 'var(--t2)'];
+    const mp  = precio - costo;
+    const pct = ((mp / precio) * 100).toFixed(1);
+    const col = mp >= 0 ? 'var(--gr)' : 'var(--re)';
+    return [clp(mp), pct + '%', col];
+  }
+
+  // ─────────────────────────────────────────────────────────
+  //  EXPORTAR CSV
+  // ─────────────────────────────────────────────────────────
+  window.exportarCSV = function() {
+    const desde = document.getElementById('rpt-desde').value;
+    const hasta  = document.getElementById('rpt-hasta').value;
+    const desdeD = new Date(desde + 'T00:00:00');
+    const hastaD = new Date(hasta  + 'T23:59:59');
+
+    const ventas = _ventasCache.filter(v => {
+      const ts = new Date(v.timestamp);
+      return ts >= desdeD && ts <= hastaD;
+    });
+
+    const rows = [['Folio','Fecha','Vendedor','Cliente','MetodoPago','Colegio','Prenda','Talla','Cantidad','PrecioUnit','SubtotalItem']];
+    ventas.forEach(v => {
+      const arr = Array.isArray(v.items) ? v.items : Object.values(v.items || {});
+      arr.forEach(i => {
+        rows.push([
+          v.folio || '',
+          v.fecha || (v.timestamp ? new Date(v.timestamp).toLocaleDateString('es-CL') : ''),
+          v.vendedor || '',
+          v.cliente || 'Anónimo',
+          v.metodoPago || '',
+          i.colegio || '',
+          i.prenda  || '',
+          i.talla   || '',
+          i.qty || i.cantidad || 0,
+          i.precio || 0,
+          ((i.qty || i.cantidad || 0) * (i.precio || 0))
+        ]);
+      });
+    });
+
+    const csv   = rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+    const blob  = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url   = URL.createObjectURL(blob);
+    const a     = document.createElement('a');
+    a.href      = url;
+    a.download  = `VMA_Ventas_${desde}_al_${hasta}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  // ── Activación automática cuando se navega al módulo ──
+  // Sobrescribimos goView para inyectar el hook sin tocar el original
+  const _goViewOriginal = window.goView;
+  window.goView = function(v) {
+    _goViewOriginal(v);
+    if (v === 'reportes') renderReportes();
+  };
+
+  // ── Init ──
+  document.addEventListener('DOMContentLoaded', function() {
+    initFechas();
+  });
+
+})();
+</script>

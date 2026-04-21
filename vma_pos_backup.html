@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VMA ERP · Sistema de Gestión</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap');
+:root{
+  --bg:#121826; --s1:#1a2233; --s2:#222d45; --s3:#2a3754; --s4:#324263;
+  --b1:#2d3a54; --b2:#384869; --b3:#45587f;
+  --ac:#3b82f6; --acd:#1d4ed8; --ac2:#60a5fa;
+  --gr:#10b981; --re:#ef4444; --ye:#f59e0b; --go:#c89b3c;
+  --tx:#f1f5f9; --t2:#cbd5e1; --t3:#94a3b8; --t4:#64748b;
+  --mo:'JetBrains Mono',monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--tx);display:flex;height:100vh;overflow:hidden;font-size:13px;}
+
+/* SIDEBAR */
+.sb{width:210px;flex-shrink:0;background:var(--s1);border-right:1px solid var(--b1);display:flex;flex-direction:column;z-index:100;}
+.brand{padding:15px;border-bottom:1px solid var(--b1);display:flex;align-items:center;gap:10px;}
+.brand img{width:34px;height:34px;border-radius:6px;background:#fff;padding:2px;}
+.brand-tx h2{font-size:12px;font-weight:800;letter-spacing:.5px;}
+.nav-bd{flex:1;padding:10px;display:flex;flex-direction:column;gap:4px;}
+.nb{display:flex;align-items:center;gap:10px;padding:10px;border-radius:8px;color:var(--t2);cursor:pointer;transition:all .2s;text-decoration:none;border:1px solid transparent;}
+.nb:hover{background:var(--s2);color:var(--tx);border-color:var(--b1);}
+.nb.active{background:rgba(59,130,246,0.15);color:var(--ac2);border-color:rgba(59,130,246,0.3);}
+.nb.back{margin-top:auto;color:var(--go);border-color:rgba(200,155,60,0.2);}
+.nb.back:hover{background:rgba(200,155,60,0.1);}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.view{flex:1;display:none;flex-direction:column;overflow:hidden;}
+.view.active{display:flex;}
+.tbar{height:50px;background:var(--s1);border-bottom:1px solid var(--b1);display:flex;align-items:center;justify-content:space-between;padding:0 20px;}
+.tbar-l{display:flex;align-items:center;gap:10px;font-weight:700;}
+#clock{font-family:var(--mo);color:var(--t3);font-size:12px;}
+
+/* POS LAYOUT (3 COLUMNAS) */
+.pos-wrap{flex:1;display:flex;overflow:hidden;}
+.pf{width:220px;background:var(--s1);border-right:1px solid var(--b1);padding:15px;overflow-y:auto;}
+.pc{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.pt{width:360px;background:var(--s1);border-left:1px solid var(--b1);display:flex;flex-direction:column;overflow:hidden;}
+
+/* COMPONENTES UI */
+.flbl{font-size:10px;font-weight:700;text-transform:uppercase;color:var(--t3);margin-bottom:5px;display:block;}
+.fi,.fs{width:100%;padding:9px 12px;background:var(--bg);border:1px solid var(--b1);border-radius:8px;color:var(--tx);font-family:inherit;font-size:13px;outline:none;margin-bottom:12px;}
+.fi:focus{border-color:var(--ac);}
+.dtb{width:100%;border-collapse:collapse;}
+.dtb th{position:sticky;top:0;background:var(--s2);padding:10px;text-align:left;font-size:11px;color:var(--t3);border-bottom:1px solid var(--b1);z-index:10;}
+.dtb tr{border-bottom:1px solid var(--b1);cursor:pointer;transition:background .1s;}
+.dtb tr:hover{background:rgba(255,255,255,0.03);}
+.dtb td{padding:12px 10px;vertical-align:middle;}
+
+/* AGRUPACIÓN TALLAS */
+.tallas-acc{display:none;background:var(--s2);padding:10px;border-bottom:1px solid var(--b1);}
+.tallas-acc.open{display:table-row;}
+.t-grid{display:flex;flex-wrap:wrap;gap:8px;}
+.t-btn{background:var(--bg);border:1px solid var(--b1);padding:6px 12px;border-radius:6px;color:var(--tx);cursor:pointer;text-align:center;min-width:60px;}
+.t-btn:hover{border-color:var(--ac);background:var(--s3);}
+.t-btn.low{border-color:var(--ye);color:var(--ye);}
+.t-btn.empty{opacity:0.4;cursor:not-allowed;}
+
+/* CARRITO */
+.cart-sec{flex:1;overflow-y:auto;}
+.ci{padding:12px 15px;border-bottom:1px solid var(--b1);display:flex;justify-content:space-between;align-items:flex-start;}
+.ci-ctrl{display:flex;align-items:center;gap:8px;margin-top:6px;}
+.cib{width:24px;height:24px;border-radius:6px;background:var(--s3);border:1px solid var(--b2);color:var(--tx);cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.ci-pr{font-family:var(--mo);font-weight:700;font-size:14px;}
+.tx-ft{padding:15px;background:var(--s2);border-top:1px solid var(--b1);}
+.tot-v{font-family:var(--mo);font-size:28px;font-weight:800;color:var(--gr);text-align:right;margin:10px 0;}
+
+/* MODALS */
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);backdrop-filter:blur(5px);z-index:1000;align-items:center;justify-content:center;}
+.modal.open{display:flex;}
+.mbox{background:var(--s2);border:1px solid var(--b2);border-radius:15px;padding:25px;width:500px;box-shadow:0 20px 50px rgba(0,0,0,0.5);}
+.m-ttl{font-size:16px;font-weight:800;margin-bottom:20px;display:flex;align-items:center;gap:10px;}
+.m-grid{display:grid;grid-template-columns:1fr 1fr;gap:15px;}
+.m-full{grid-column:1/-1;}
+
+/* BOTONES */
+.btn-p{width:100%;padding:14px;background:var(--gr);color:#000;border:none;border-radius:10px;font-weight:800;font-size:14px;cursor:pointer;transition:transform .2s;}
+.btn-p:hover{transform:translateY(-2px);filter:brightness(1.1);}
+.btn-w{background:#25d366 !important;color:#fff !important;}
+
+/* BODEGA VOUCHER */
+.v-hdr{background:var(--s1);padding:15px;border-radius:10px;border:1px solid var(--b1);margin-bottom:20px;}
+
+/* REPORTE FECHAS */
+.rep-ctrl{display:flex;gap:15px;background:var(--s1);padding:15px;border-bottom:1px solid var(--b1);align-items:flex-end;}
+</style>
+</head>
+<body>
+
+<nav class="sb">
+  <div class="brand">
+    <div class="brand-tx"><h2>VMA CORE</h2><span style="font-size:9px;color:var(--t3);text-transform:uppercase;">Peñalolén</span></div>
+  </div>
+  <div class="nav-bd">
+    <div class="nb active" onclick="goView('pos')"><i class="fa-solid fa-cash-register"></i> Terminal POS</div>
+    <div class="nb" onclick="goView('bodega')"><i class="fa-solid fa-boxes-stacked"></i> Bodega</div>
+    <div class="nb" onclick="goView('reportes')"><i class="fa-solid fa-chart-line"></i> Reportes</div>
+    <a href="index.html" class="nb back"><i class="fa-solid fa-house"></i> Menú Principal</a>
+  </div>
+</nav>
+
+<div class="main">
+  <header class="tbar">
+    <div class="tbar-l" id="vTitle">Terminal de Ventas</div>
+    <div id="clock">00:00:00</div>
+  </header>
+
+  <div id="view-pos" class="view active">
+    <div class="pos-wrap">
+      <div class="pf">
+        <label class="flbl">Colegio</label>
+        <select class="fs" id="sCol" onchange="renderTabla()"><option value="">Todos</option></select>
+        <label class="flbl">Prenda</label>
+        <input type="text" class="fi" id="sTxt" placeholder="Buscar..." oninput="renderTabla()">
+        <label class="flbl">Escanear</label>
+        <input type="text" class="fi" id="bcI" placeholder="Barcode..." onkeydown="if(event.key==='Enter')escanear()">
+      </div>
+      <div class="pc">
+        <div style="flex:1;overflow-y:auto;">
+          <table class="dtb">
+            <thead><tr><th>Prenda</th><th>Colegio</th><th style="text-align:right">Rango Precios</th></tr></thead>
+            <tbody id="tBody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="pt">
+        <div style="padding:15px; border-bottom:1px solid var(--b1);">
+          <label class="flbl">Cliente</label>
+          <div style="display:flex;gap:8px;">
+            <input type="text" class="fi" id="clI" placeholder="Buscar cliente..." oninput="buscarCl(this.value)" style="margin-bottom:0;">
+            <button onclick="abrirModalCl()" style="padding:0 10px; border-radius:8px; background:var(--ac); border:none; color:#fff;"><i class="fa-solid fa-plus"></i></button>
+          </div>
+          <div id="clDrop" style="position:relative;display:none;background:var(--s2);border:1px solid var(--b1);border-radius:8px;margin-top:5px;padding:5px;"></div>
+          <div id="clAct" style="margin-top:10px;padding:10px;background:rgba(16,185,129,0.1);border-radius:8px;display:none;">
+            <b id="clNom"></b><br><span id="clDat" style="font-size:11px;color:var(--t3);"></span>
+          </div>
+        </div>
+        <div class="cart-sec" id="cartItems"></div>
+        <div class="tx-ft">
+          <label class="flbl">Vendedor</label>
+          <select class="fs" id="sVend"></select>
+          <label class="flbl">Método de Pago</label>
+          <select class="fs" id="sPago">
+            <option>Débito</option><option>Crédito</option><option>Efectivo</option><option>Transferencia</option>
+          </select>
+          <div class="total-line"><span>Total a Pagar</span></div>
+          <div class="tot-v" id="totV">$0</div>
+          <button class="btn-p" onclick="procesarVenta()">CERRAR VENTA</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="view-bodega" class="view">
+    <div style="padding:25px; overflow-y:auto; flex:1;">
+      <div class="v-hdr">
+        <h3 style="margin-bottom:15px;">Comprobante de Ingreso</h3>
+        <div class="m-grid">
+          <div><label class="flbl">Fecha</label><input type="text" class="fi" id="vFecha" readonly></div>
+          <div><label class="flbl">Responsable</label><select class="fs" id="vRes"></select></div>
+        </div>
+      </div>
+      <div class="v-hdr">
+        <div class="m-grid">
+          <div class="m-full"><label class="flbl">Escanear Producto</label><input type="text" class="fi" id="vBC" placeholder="Barcode..." onkeydown="if(event.key==='Enter')agregarABodega()"></div>
+        </div>
+      </div>
+      <table class="dtb">
+        <thead><tr><th>Prenda</th><th>Colegio</th><th>Talla</th><th style="text-align:right">Cantidad</th></tr></thead>
+        <tbody id="vBody"></tbody>
+      </table>
+      <button class="btn-p" style="margin-top:20px; background:var(--ac); color:#fff;" onclick="guardarBodega()">PROCESAR INGRESO</button>
+    </div>
+  </div>
+
+  <div id="view-reportes" class="view">
+    <div class="rep-ctrl">
+      <div><label class="flbl">Desde</label><input type="date" class="fi" id="dDesde" style="margin-bottom:0;"></div>
+      <div><label class="flbl">Hasta</label><input type="date" class="fi" id="dHasta" style="margin-bottom:0;"></div>
+      <button class="btn-p" style="width:auto; height:40px; background:var(--s3); color:#fff;" onclick="cargarReportes()">FILTRAR</button>
+    </div>
+    <div style="padding:20px; flex:1; overflow-y:auto;" id="repCont">
+      <div style="text-align:center; padding:50px; color:var(--t4);">Seleccione rango de fechas para ver reportes.</div>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="mCl">
+  <div class="mbox">
+    <div class="m-ttl">Nuevo Cliente</div>
+    <div class="m-grid">
+      <div class="m-full"><label class="flbl">Nombre Completo</label><input type="text" class="fi" id="nc-nom"></div>
+      <div><label class="flbl">Teléfono</label><input type="text" class="fi" id="nc-tel"></div>
+      <div><label class="flbl">Correo</label><input type="text" class="fi" id="nc-mail"></div>
+      <div class="m-full"><label class="flbl">Dirección</label><input type="text" class="fi" id="nc-dir"></div>
+      <div class="m-full"><label class="flbl">Observación General</label><input type="text" class="fi" id="nc-obs"></div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:20px;">
+      <button class="btn-p" onclick="guardarNuevoCl()">GUARDAR</button>
+      <button class="btn-p" style="background:var(--s4);color:#fff;" onclick="cerrarModalCl()">CANCELAR</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="mNota">
+  <div class="mbox">
+    <div class="m-ttl">Venta Exitosa</div>
+    <div class="nota-pre" id="notaPre" style="background:#000; padding:15px; font-family:var(--mo); font-size:12px; border-radius:10px; color:var(--gr); white-space:pre-wrap;"></div>
+    <div style="display:flex;gap:10px;margin-top:20px;">
+      <button class="btn-p btn-w" onclick="enviarWA()"><i class="fa-brands fa-whatsapp"></i> ENVIAR</button>
+      <button class="btn-p" onclick="imprimir()">IMPRIMIR</button>
+      <button class="btn-p" style="background:var(--s4);color:#fff;" onclick="cerrarNota()">CERRAR</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let articulos=[], stock={}, clientes=[], vendedores=[], agrupados={};
+let cart={}, cartSeq=0, currentCl=null, waMsg="";
+
+const fmt=n=>Number(n).toLocaleString('es-CL');
+const cap=s=>s?s.charAt(0).toUpperCase()+s.slice(1).toLowerCase():'';
+const ck=(c,p,t)=>`${c}||${p}||${t}`;
+
+setInterval(()=>document.getElementById('clock').innerText=new Date().toLocaleTimeString('es-CL'),1000);
+
+async function loadAll(){
+  const [c,v,p,s]=await Promise.all([
+    fetch('clientes.csv').then(r=>r.text()),
+    fetch('vendedores.csv').then(r=>r.text()),
+    fetch('vma_precios_matriz.csv').then(r=>r.text()),
+    fetch('http://localhost:3000/api/stock').then(r=>r.json())
+  ]);
+  clientes=Papa.parse(c,{header:true,skipEmptyLines:true}).data;
+  vendedores=Papa.parse(v,{header:true,skipEmptyLines:true}).data;
+  const preciosRaw=Papa.parse(p,{header:true,skipEmptyLines:true}).data;
+  articulos=parseMatriz(preciosRaw);
+  stock=s||{};
+  poblarSelects();
+  renderTabla();
+  document.getElementById('dbStatusTxt').innerText="Sistema Conectado";
+}
+
+function parseMatriz(rows){
+  const items=[]; agrupados={};
+  const tallas=['T3','T4','T6','T8','T10','T12','T14','T16','SMLXL','2XL'];
+  rows.forEach(r=>{
+    const col=(r.COLEGIO||r.colegio||'').trim(), pre=(r.PRENDA||r.prenda||'').trim();
+    if(!col||!pre)return;
+    const gKey=`${col}||${pre}`;
+    if(!agrupados[gKey]) agrupados[gKey]={col,pre,tallas:[],min:Infinity,max:0};
+    tallas.forEach(t=>{
+      const val=(r[t]||'').toString().trim();
+      if(!val||val.toUpperCase()==='NO')return;
+      const p=parseInt(val.replace(/\D/g,''));
+      items.push({col,pre,talla:t,precio:p});
+      agrupados[gKey].tallas.push({t,p});
+      if(p<agrupados[gKey].min)agrupados[gKey].min=p;
+      if(p>agrupados[gKey].max)agrupados[gKey].max=p;
+    });
+  });
+  return items;
+}
+
+function renderTabla(){
+  const col=document.getElementById('sCol').value, txt=document.getElementById('sTxt').value.toLowerCase();
+  let keys=Object.keys(agrupados);
+  if(col) keys=keys.filter(k=>agrupados[k].col===col);
+  if(txt) keys=keys.filter(k=>agrupados[k].pre.toLowerCase().includes(txt));
+  
+  document.getElementById('tBody').innerHTML=keys.map(k=>{
+    const g=agrupados[k];
+    const pRange=g.min===g.max?`$${fmt(g.min)}`:`$${fmt(g.min)} - $${fmt(g.max)}`;
+    return `
+      <tr onclick="toggleTallas('${k}')">
+        <td><div style="font-weight:700;">${cap(g.pre)}</div><div style="font-size:10px;color:var(--t3);">${g.col}</div></td>
+        <td>${g.col}</td>
+        <td style="text-align:right;font-family:var(--mo);font-weight:700;">${pRange}</td>
+      </tr>
+      <tr id="t-${k}" class="tallas-acc">
+        <td colspan="3"><div class="t-grid">${g.tallas.map(t=>{
+          const s=stock[ck(g.col,g.pre,t.t)]||0;
+          const cls=s<=0?'empty':s<5?'low':'';
+          return `<button class="t-btn ${cls}" onclick="addC('${g.col}','${g.pre}','${t.t}',${t.p})"><b>${t.t}</b><br><small>Stk: ${s}</small></button>`;
+        }).join('')}</div></td>
+      </tr>`;
+  }).join('');
+}
+
+function toggleTallas(k){
+  const el=document.getElementById(`t-${k}`);
+  const isO=el.classList.contains('open');
+  document.querySelectorAll('.tallas-acc').forEach(x=>x.classList.remove('open'));
+  if(!isO)el.classList.add('open');
+}
+
+function addC(c,p,t,pr){
+  const key=ck(c,p,t);
+  if(cart[key]) cart[key].q++;
+  else cart[key]={c,p,t,pr,q:1,s:cartSeq++};
+  updateCart();
+}
+
+function updateCart(){
+  const keys=Object.keys(cart).sort((a,b)=>cart[a].s-cart[b].s);
+  const cont=document.getElementById('cartItems');
+  if(!keys.length){cont.innerHTML='<div style="text-align:center;padding:40px;color:var(--t4);">Carrito vacío</div>';document.getElementById('totV').innerText="$0";return;}
+  let total=0;
+  cont.innerHTML=keys.map(k=>{
+    const i=cart[k],sub=i.q*i.pr; total+=sub;
+    return `
+      <div class="ci">
+        <div>
+          <div style="font-weight:700;">${cap(i.p)}</div>
+          <div style="font-size:10px;color:var(--t3);">${i.c} · ${i.t}</div>
+          <div class="ci-ctrl">
+            <button class="cib" onclick="modQ('${k}',-1)">-</button>
+            <span style="font-family:var(--mo);font-weight:700;">${i.q}</span>
+            <button class="cib" onclick="modQ('${k}',1)">+</button>
+          </div>
+        </div>
+        <div style="text-align:right;">
+          <div class="ci-pr">$${fmt(sub)}</div>
+          <button style="background:none;border:none;color:var(--t4);cursor:pointer;" onclick="delI('${k}')"><i class="fa-solid fa-trash"></i></button>
+        </div>
+      </div>`;
+  }).join('');
+  document.getElementById('totV').innerText=`$${fmt(total)}`;
+}
+
+function modQ(k,v){cart[k].q+=v;if(cart[k].q<=0)delete cart[k];updateCart();}
+function delI(k){delete cart[k];updateCart();}
+
+async function procesarVenta(){
+  const keys=Object.keys(cart);
+  if(!keys.length||!currentCl||!document.getElementById('sVend').value){alert("Faltan datos");return;}
+  const folio=`VMA-${Date.now().toString().slice(-6)}`;
+  const now=new Date();
+  let sub=0,lineas="",waDet="";
+  keys.forEach(k=>{
+    const i=cart[k],lin=i.q*i.pr; sub+=lin;
+    lineas+=`  ${cap(i.p).padEnd(20)} ${i.t.padEnd(5)} ${i.q}u x $${fmt(i.pr).padStart(8)} = $${fmt(lin)}\n`;
+    waDet+=`• ${cap(i.p)} (${i.t}) x${i.q} -> $${fmt(lin)}\n`;
+  });
+  const nota=`------------------------------------------
+  VMA UNIFORMES - NOTA DE VENTA
+------------------------------------------
+  Folio   : ${folio}
+  Fecha   : ${now.toLocaleDateString()} ${now.toLocaleTimeString()}
+  Cliente : ${currentCl.NOMBRE}
+  Pago    : ${document.getElementById('sPago').value}
+------------------------------------------
+${lineas}------------------------------------------
+  TOTAL   : $${fmt(sub)}
+------------------------------------------`;
+  document.getElementById('notaPre').innerText=nota;
+  waMsg=`Hola *${currentCl.NOMBRE}*! Comprobante *#${folio}*:\n\n${waDet}\n*TOTAL: $${fmt(sub)}*\n¡Gracias!`;
+  document.getElementById('mNota').classList.add('open');
+}
+
+function enviarWA(){
+  let tel=currentCl.CELULAR_ID||currentCl.CELLULAR_ID||"";
+  tel=tel.replace(/\D/g,''); if(!tel.startsWith('56'))tel='56'+tel;
+  window.open(`https://api.whatsapp.com/send?phone=${tel}&text=${encodeURIComponent(waMsg)}`,'_blank');
+}
+
+function goView(v){
+  document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
+  document.getElementById(`view-${v}`).classList.add('active');
+  document.getElementById('vTitle').innerText=v==='pos'?'Terminal de Ventas':v==='bodega'?'Ingreso de Mercadería':'Reportes del Sistema';
+  if(v==='bodega') document.getElementById('vFecha').value=new Date().toLocaleString();
+}
+
+function poblarSelects(){
+  const sc=document.getElementById('sCol');
+  [...new Set(articulos.map(a=>a.col))].sort().forEach(x=>sc.add(new Option(x,x)));
+  const sv=document.getElementById('sVend'), vr=document.getElementById('vRes');
+  vendedores.forEach(x=>{const n=x.NOMBRE||x.Nombre;sv.add(new Option(n,x.ID));vr.add(new Option(n,x.ID))});
+}
+
+function buscarCl(q){
+  if(q.length<2){document.getElementById('clDrop').style.display='none';return;}
+  const m=clientes.filter(c=>(c.NOMBRE||'').toLowerCase().includes(q.toLowerCase())).slice(0,5);
+  document.getElementById('clDrop').innerHTML=m.map(c=>`<div style="padding:8px;cursor:pointer;border-bottom:1px solid var(--b1);" onclick="setCl(${clientes.indexOf(c)})">${c.NOMBRE}</div>`).join('');
+  document.getElementById('clDrop').style.display='block';
+}
+
+function setCl(i){
+  currentCl=clientes[i];
+  document.getElementById('clNom').innerText=currentCl.NOMBRE;
+  document.getElementById('clDat').innerText=`Tel: ${currentCl.CELULAR_ID||'—'} | Dir: ${currentCl.DIRECCION||'—'}`;
+  document.getElementById('clAct').style.display='block';
+  document.getElementById('clDrop').style.display='none';
+  document.getElementById('clI').value="";
+}
+
+function abrirModalCl(){document.getElementById('mCl').classList.add('open');}
+function cerrarModalCl(){document.getElementById('mCl').classList.remove('open');}
+function cerrarNota(){document.getElementById('mNota').classList.remove('open');cart={};updateCart();currentCl=null;document.getElementById('clAct').style.display='none';}
+
+window.addEventListener('DOMContentLoaded',loadAll);
+</script>
+</body>
+</html>
