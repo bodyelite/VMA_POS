@@ -12,19 +12,19 @@
 
 /* ── PALETA CLARA ─────────────────────────────────────────── */
 :root{
-  --bg:  #f1f5f9;       /* fondo general gris claro          */
-  --s1:  #ffffff;       /* tarjetas / superficie principal    */
-  --s2:  #e2e8f0;       /* bordes / superficies secundarias  */
-  --s3:  #f8fafc;       /* fondo de inputs                   */
-  --ac:  #2563eb;       /* azul VMA                          */
-  --ac2: #dbeafe;       /* azul muy suave (hover/badge)      */
-  --gr:  #16a34a;       /* verde confirmar                   */
-  --re:  #dc2626;       /* rojo alerta                       */
-  --ye:  #d97706;       /* amarillo stock crítico             */
-  --tx:  #1e293b;       /* texto principal                   */
-  --t2:  #64748b;       /* texto secundario/muted            */
-  --sha: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.05);
-  --sha2:0 4px 12px rgba(0,0,0,0.10);
+  --bg:  #eef2f7;        /* fondo general gris azulado         */
+  --s1:  #ffffff;        /* tarjetas blancas                   */
+  --s2:  #cbd5e1;        /* bordes grises con más presencia    */
+  --s3:  #f8fafc;        /* fondo inputs                       */
+  --ac:  #2563eb;
+  --ac2: #dbeafe;
+  --gr:  #16a34a;
+  --re:  #dc2626;
+  --ye:  #d97706;
+  --tx:  #1e293b;
+  --t2:  #64748b;
+  --sha: 0 1px 4px rgba(0,0,0,0.10), 0 0 0 1px rgba(0,0,0,0.04);
+  --sha2:0 4px 16px rgba(0,0,0,0.13);
 }
 
 *{box-sizing:border-box;margin:0;padding:0;font-family:'Inter',sans-serif;}
@@ -42,8 +42,12 @@ body{background:var(--bg);color:var(--tx);min-height:100vh;display:flex;
 .view-wrapper.active{display:flex;}
 
 /* ── CARDS ────────────────────────────────────────────────── */
-.section-card{background:var(--s1);border-radius:10px;border:1px solid var(--s2);
+.section-card{background:var(--s1);border-radius:10px;
+              border:1px solid var(--s2);
               padding:14px;box-shadow:var(--sha);}
+.section-card + .section-card{margin-top:0;}
+/* Línea de acento superior en cada card para ayudar a delimitar */
+.section-card.accent-top{border-top:3px solid var(--ac);}
 .lbl{font-size:10px;font-weight:800;text-transform:uppercase;color:var(--t2);
      margin-bottom:4px;display:block;letter-spacing:.06em;}
 
@@ -173,76 +177,88 @@ body{background:var(--bg);color:var(--tx);min-height:100vh;display:flex;
 }
 
 /* ═══════════════════════════════════════════════════════════
-   LAYOUT MÓVIL — pantallas < 768px
+   LAYOUT MÓVIL — pantallas ≤ 768px
    ══════════════════════════════════════════════════════════ */
 @media (max-width:768px){
   body{font-size:14px;}
 
-  /* Header compacto */
   .hdr{padding:0 12px;height:48px;}
   .hdr h2{font-size:13px;}
   .hdr a{font-size:12px;}
 
-  /* POS container en columna */
-  .pos-container{display:flex;flex-direction:column;padding:10px;gap:10px;
-                 flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+  /* POS: columna única scrolleable */
+  .pos-container{display:flex!important;flex-direction:column;
+                 padding:10px;gap:10px;flex:1;
+                 overflow-y:auto;-webkit-overflow-scrolling:touch;
+                 height:auto!important;}
 
-  /* Cliente — apilado en 2 columnas */
+  /* Card cliente: 2 cols + fila completa para dirección y botón */
   .grid-cl{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .grid-cl > *:nth-child(3){grid-column:1/-1;}
   .grid-cl > *:nth-child(4){grid-column:1/-1;}
   .grid-cl > *:nth-child(5){grid-column:1/-1;}
 
-  /* Search results ancho completo */
-  .search-res{width:100%;min-width:unset;}
+  .search-res{width:100%;min-width:unset;left:0;}
 
-  /* Productos — columna simple */
-  .grid-prod{display:flex;flex-direction:column;gap:10px;height:auto;}
-  .zona-izq{border-right:none;padding-right:0;border-bottom:1px solid var(--s2);
-            padding-bottom:10px;}
-  #listaPrendas{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;
-                max-height:160px;overflow-y:auto;margin-top:6px;}
+  /* Card producto: columna única, sin altura fija */
+  .grid-prod{display:flex!important;flex-direction:column;
+             gap:10px;height:auto!important;}
+  .zona-izq{border-right:none;padding-right:0;
+            border-bottom:2px solid var(--s2);padding-bottom:12px;}
 
-  /* Tallas más grandes para dedo */
-  .selector-tallas{grid-template-columns:repeat(3,1fr);gap:10px;}
-  .btn-t{padding:14px 6px;}
-  .btn-t b{font-size:16px;}
+  /* Prendas: 2 cols, max 140px alto para no copar pantalla */
+  #listaPrendas{display:grid!important;grid-template-columns:repeat(2,1fr);
+                gap:7px;max-height:140px;overflow-y:auto;margin-top:6px;}
+  .p-btn{padding:10px 6px;font-size:13px;min-height:44px;}
 
-  /* Panel tallas siempre visible en mobile */
+  /* Tallas: 3 cols, botones grandes para dedo */
+  .selector-tallas{grid-template-columns:repeat(3,1fr)!important;gap:10px;}
+  .btn-t{padding:14px 6px;min-height:60px;}
+  .btn-t b{font-size:17px;}
+  .btn-t small{font-size:12px;}
+
+  /* Zona tallas siempre visible */
   #zonaTallas{display:flex!important;flex-direction:column;gap:10px;}
-  #controlQty{display:block!important;margin-top:8px;}
+  #controlQty{display:flex!important;margin-top:8px;}
 
-  /* Carrito vertical */
-  .main-bottom{display:flex;flex-direction:column;gap:10px;}
-  .table-wrap{max-height:220px;overflow-y:auto;}
+  /* Carrito: columna */
+  .main-bottom{display:flex!important;flex-direction:column;gap:10px;
+               overflow:visible!important;}
+  .table-wrap{max-height:200px;overflow-y:auto;}
 
-  /* Summary card horizontal en mobile */
-  .summary-card{flex-direction:row;align-items:center;gap:12px;padding:12px;}
-  .summary-card > div:first-child{display:none;} /* oculta vendedor/pago en mobile */
+  /* Summary card compacta */
+  .summary-card{flex-direction:column;gap:10px;padding:12px;}
+  .summary-card > div:first-child{
+    display:grid;grid-template-columns:1fr 1fr;gap:8px;
+  }
   .total-val{font-size:28px;}
-  .btn-main{padding:14px 18px;font-size:14px;min-width:140px;}
+  .btn-main{padding:14px 18px;font-size:15px;}
 
-  /* Botón finalizar sticky */
+  /* Sticky finalizar */
   .mob-sticky-btn{position:sticky;bottom:0;z-index:40;padding:10px;
-                  background:var(--bg);border-top:1px solid var(--s2);}
+                  background:var(--bg);border-top:2px solid var(--s2);
+                  box-shadow:0 -4px 12px rgba(0,0,0,.08);}
 
-  /* Inputs más grandes */
-  .in{padding:11px 12px;font-size:15px;}
+  .in{padding:11px 12px;font-size:15px;min-height:44px;}
   .scanner-input{font-size:16px;padding:13px;}
 
   /* Bodega responsive */
   .bodega-grid{display:flex!important;flex-direction:column;gap:10px;}
   .bodega-grid > *{width:100%!important;}
 
-  /* Reportes — tabs scroll horizontal */
+  /* Ajuste de inventario responsive */
+  #ajuste-header-grid{grid-template-columns:1fr!important;}
+  #ajuste-add-grid{grid-template-columns:1fr 1fr!important;}
+  #ajuste-add-grid > *:nth-child(3){grid-column:1/-1;}
+  #ajuste-add-grid > *:nth-child(4){grid-column:1/-1;}
+  #ajuste-add-grid > *:nth-child(5){grid-column:1/-1;}
+
+  /* Reportes tabs scroll */
   .rpt-tabs-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;
                  display:flex;border-bottom:2px solid var(--s2);}
   .rpt-tab{flex-shrink:0;padding:10px 14px;font-size:11px;}
   .rpt-kpi-value{font-size:22px;}
-
-  /* Charts más pequeños */
   canvas{max-height:200px!important;}
-
-  /* Tabla margen scroll x */
   .rpt-table-wrap{overflow-x:auto;}
   .rpt-table{min-width:600px;}
 }
@@ -401,6 +417,142 @@ body{background:var(--bg);color:var(--tx);min-height:100vh;display:flex;
   </div>
 </div>
 
+<div id="view-ajuste" class="view-wrapper">
+  <div style="padding:16px;overflow-y:auto;flex:1;background:var(--bg);">
+
+    <!-- Encabezado del ajuste -->
+    <div class="section-card accent-top" style="margin-bottom:14px;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+        <i class="fa-solid fa-clipboard-check" style="color:var(--ac);font-size:20px;"></i>
+        <div>
+          <div style="font-weight:800;font-size:15px;color:var(--tx);">Ajuste de Inventario</div>
+          <div style="font-size:11px;color:var(--t2);">Establece el stock real contado — pisa el valor anterior</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:160px 1fr 1fr;gap:12px;align-items:end;" id="ajuste-header-grid">
+        <div>
+          <label class="lbl">Fecha</label>
+          <input type="date" id="ajFecha" class="in">
+        </div>
+        <div>
+          <label class="lbl">Responsable</label>
+          <select id="ajVendedor" class="in"></select>
+        </div>
+        <div>
+          <label class="lbl">Observaciones</label>
+          <input type="text" id="ajObs" class="in" placeholder="Ej: Inventario físico mensual">
+        </div>
+      </div>
+    </div>
+
+    <!-- Línea de ingreso -->
+    <div class="section-card" style="margin-bottom:14px;">
+      <div class="lbl" style="margin-bottom:10px;"><i class="fa-solid fa-plus"></i> AGREGAR LÍNEA</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 120px auto;gap:10px;align-items:end;" id="ajuste-add-grid">
+        <div>
+          <label class="lbl">Colegio</label>
+          <select id="ajCol" class="in" onchange="ajActPren()"><option value="">— Seleccione —</option></select>
+        </div>
+        <div>
+          <label class="lbl">Prenda</label>
+          <select id="ajPren" class="in" onchange="ajActTal()"><option value="">— Seleccione —</option></select>
+        </div>
+        <div>
+          <label class="lbl">Talla</label>
+          <select id="ajTal" class="in"><option value="">— Seleccione —</option></select>
+        </div>
+        <div>
+          <label class="lbl">Cant. Real</label>
+          <input type="number" id="ajQty" class="in" min="0" value="0"
+                 style="text-align:center;font-size:18px;font-weight:800;"
+                 onkeydown="if(event.key==='Enter')ajAgregar()">
+        </div>
+        <div style="display:flex;align-items:flex-end;">
+          <button onclick="ajAgregar()" class="btn-main"
+                  style="background:var(--ac);height:44px;width:44px;padding:0;
+                         display:flex;align-items:center;justify-content:center;font-size:20px;">
+            +
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabla de líneas del ajuste -->
+    <div class="section-card" style="margin-bottom:14px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <div class="lbl"><i class="fa-solid fa-list-check"></i> LÍNEAS DEL AJUSTE
+          <span id="ajuste-count" style="background:var(--ac);color:#fff;padding:2px 8px;
+                border-radius:12px;font-size:11px;margin-left:6px;">0</span>
+        </div>
+        <button onclick="ajLimpiar()"
+                style="background:none;border:none;color:var(--t2);cursor:pointer;
+                       font-size:12px;font-weight:700;">✕ Limpiar todo</button>
+      </div>
+      <div class="table-wrap" style="max-height:300px;">
+        <table class="cart-table">
+          <thead>
+            <tr>
+              <th>Colegio</th><th>Prenda</th><th>Talla</th>
+              <th style="text-align:center;">Stock Actual</th>
+              <th style="text-align:center;">Stock Nuevo</th>
+              <th style="text-align:center;">Diferencia</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="ajuste-tbody">
+            <tr><td colspan="7" style="text-align:center;padding:24px;color:var(--t2);">
+              Agregue líneas para comenzar el ajuste
+            </td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Botón guardar -->
+    <div style="display:flex;justify-content:flex-end;gap:10px;">
+      <button onclick="ajLimpiar()" class="btn-main"
+              style="background:var(--s2);color:var(--tx);width:auto;padding:12px 24px;">
+        Cancelar
+      </button>
+      <button onclick="ajGuardar()" class="btn-main"
+              style="background:var(--gr);width:auto;padding:12px 32px;font-size:15px;" id="btnGuardarAjuste">
+        <i class="fa-solid fa-floppy-disk"></i> GUARDAR AJUSTE DE INVENTARIO
+      </button>
+    </div>
+
+    <!-- Historial de ajustes -->
+    <div class="section-card" style="margin-top:20px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <div class="lbl"><i class="fa-solid fa-clock-rotate-left"></i> HISTORIAL DE AJUSTES</div>
+        <button onclick="ajCargarHistorial()"
+                style="background:none;border:1px solid var(--s2);border-radius:6px;
+                       padding:5px 12px;cursor:pointer;font-size:12px;font-weight:700;color:var(--t2);">
+          ↺ Recargar
+        </button>
+      </div>
+      <div class="table-wrap" style="max-height:240px;overflow-x:auto;">
+        <table class="cart-table" style="min-width:700px;">
+          <thead>
+            <tr>
+              <th>Fecha</th><th>Responsable</th><th>Colegio</th>
+              <th>Prenda</th><th>Talla</th>
+              <th style="text-align:center;">Stock Anterior</th>
+              <th style="text-align:center;">Stock Nuevo</th>
+              <th>Observación</th>
+            </tr>
+          </thead>
+          <tbody id="historial-tbody">
+            <tr><td colspan="8" style="text-align:center;padding:20px;color:var(--t2);">
+              Cargando historial...
+            </td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
 <div class="modal" id="mFinal">
     <div class="mbox">
         <i class="fa-solid fa-check-circle" style="font-size:60px; color:var(--gr); margin-bottom:15px;"></i>
@@ -422,11 +574,17 @@ function goView(v){
     document.querySelectorAll('.view-wrapper').forEach(x=>x.classList.remove('active'));
     const target = document.getElementById('view-'+v);
     if(target) target.classList.add('active');
-    const titles = {'pos': 'TERMINAL DE VENTAS', 'bodega': 'MÓDULO COMPRAS/BODEGA', 'reportes': 'REPORTES GERENCIALES'};
+    const titles = {
+        'pos': 'TERMINAL DE VENTAS',
+        'bodega': 'MÓDULO COMPRAS/BODEGA',
+        'reportes': 'REPORTES GERENCIALES',
+        'ajuste': 'AJUSTE DE INVENTARIO'
+    };
     document.getElementById('header-title').innerText = "VMA CORE | " + (titles[v] || 'SISTEMA');
     if(v === 'pos') setTimeout(() => document.getElementById('bcInput')?.focus(), 300);
     if(v === 'bodega') setTimeout(() => document.getElementById('bcBodega')?.focus(), 300);
     if(v === 'reportes') renderReportes();
+    if(v === 'ajuste') { ajCargarHistorial(); ajPoblarSelectores(); }
 }
 
 async function init(){
@@ -448,6 +606,9 @@ async function init(){
     [...new Set(articulos.map(a=>a.col))].sort().forEach(x=>bc.add(new Option(x,x)));
     const vr = document.getElementById('vRes'); vr.innerHTML = '';
     vendedores.forEach(x=>vr.add(new Option(x.NOMBRE || x.NOMBRE, x.ID)));
+    // Ajuste de inventario — selector de vendedor
+    const av = document.getElementById('ajVendedor'); if(av){ av.innerHTML = ''; vendedores.forEach(x=>av.add(new Option(x.NOMBRE, x.NOMBRE))); }
+    ajPoblarSelectores();
 }
 
 function parseMatriz(rows){
@@ -472,6 +633,9 @@ function generarSKU(colegio, prenda, talla) {
     const t = (talla||'').toString().toUpperCase().replace(/\s+/g,'').slice(0,4);
     return t ? `${c}-${p}-T${t}` : `${c}-${p}`;
 }
+
+// Retorna stock de un item. Si no está en el JSON asume 100 (inventario pendiente).
+function getStock(key){ return stock[key] !== undefined ? stock[key] : 100; }
 
 // ==== FUNCIONES POS ====
 function escanearCB() {
@@ -498,7 +662,7 @@ function escanearCB() {
         const items = articulos.filter(a => a.col===col && a.pre===match.pre);
         const cont  = document.getElementById('contTallas');
         cont.innerHTML = items.map(i => {
-            const sk = `${col}||${match.pre}||${i.talla}`, cant = stock[sk] || 0;
+            const sk = `${col}||${match.pre}||${i.talla}`, cant = getStock(sk);
             let stockClass = cant <= 0 ? 'empty' : (cant < 5 ? 'stock-critico' : '');
             return `<div class="btn-t ${cant<=0?'empty':''}" onclick="${cant>0?`setVentaItem('${i.talla}',${i.precio},this,${i.costo||0})`:''}"><b>${i.talla}</b><small class="${stockClass}">Stock: ${cant}</small></div>`;
         }).join('');
@@ -530,7 +694,7 @@ function verTallas(prenda, btn){
     const col = document.getElementById('sCol').value; document.getElementById('lblTallaTxt').innerText = `Tallas para: ${prenda}`;
     const items = articulos.filter(a=>a.col===col && a.pre===prenda), cont = document.getElementById('contTallas');
     cont.innerHTML = items.map(i=>{
-        const sk = `${col}||${prenda}||${i.talla}`; const cant = stock[sk] || 0;
+        const sk = `${col}||${prenda}||${i.talla}`; const cant = getStock(sk);
         let stockClass = cant <= 0 ? 'empty' : (cant < 5 ? 'stock-critico' : '');
         return `<div class="btn-t ${cant <= 0 ? 'empty' : ''}" onclick="${cant > 0 ? `setVentaItem('${i.talla}', ${i.precio}, this)` : ''}"><b>${i.talla}</b><small class="${stockClass}">Stock: ${cant}</small></div>`;
     }).join('');
@@ -786,8 +950,157 @@ window.exportarCSV = function() {
     a.href = url; a.download = `VMA_Ventas_${desde}_al_${hasta}.csv`; a.click(); URL.revokeObjectURL(url);
 };
 
+// ════════════════════════════════════════════════════════════
+// AJUSTE DE INVENTARIO
+// ════════════════════════════════════════════════════════════
+let ajusteLineas = [];
+
+function ajPoblarSelectores() {
+    const sel = document.getElementById('ajCol');
+    if (!sel || !articulos.length) return;
+    const colegios = [...new Set(articulos.map(a=>a.col))].sort();
+    sel.innerHTML = '<option value="">— Seleccione —</option>' +
+        colegios.map(c=>`<option value="${c}">${c}</option>`).join('');
+    document.getElementById('ajPren').innerHTML = '<option value="">— Seleccione —</option>';
+    document.getElementById('ajTal').innerHTML  = '<option value="">— Seleccione —</option>';
+}
+
+function ajActPren() {
+    const col = document.getElementById('ajCol').value;
+    const prendas = [...new Set(articulos.filter(a=>a.col===col).map(a=>a.pre))].sort();
+    document.getElementById('ajPren').innerHTML =
+        '<option value="">— Seleccione —</option>' +
+        prendas.map(p=>`<option value="${p}">${p}</option>`).join('');
+    document.getElementById('ajTal').innerHTML = '<option value="">— Seleccione —</option>';
+}
+
+function ajActTal() {
+    const col = document.getElementById('ajCol').value;
+    const pre = document.getElementById('ajPren').value;
+    const tallas = [...new Set(articulos.filter(a=>a.col===col&&a.pre===pre).map(a=>a.talla))].sort();
+    document.getElementById('ajTal').innerHTML =
+        '<option value="">— Seleccione —</option>' +
+        tallas.map(t=>`<option value="${t}">${t}</option>`).join('');
+}
+
+function ajAgregar() {
+    const col = document.getElementById('ajCol').value;
+    const pre = document.getElementById('ajPren').value;
+    const tal = document.getElementById('ajTal').value;
+    const qty = parseInt(document.getElementById('ajQty').value);
+    if (!col || !pre || !tal) return alert('Seleccione Colegio, Prenda y Talla.');
+    if (isNaN(qty) || qty < 0) return alert('Ingrese una cantidad válida (≥ 0).');
+    const key = `${col}||${pre}||${tal}`;
+    const existente = ajusteLineas.findIndex(l=>l.key===key);
+    if (existente >= 0) { ajusteLineas[existente].nuevo = qty; }
+    else { ajusteLineas.push({ col, pre, tal, key, anterior: getStock(key), nuevo: qty }); }
+    ajRenderLineas();
+    document.getElementById('ajQty').value = '0';
+    document.getElementById('ajQty').focus();
+}
+
+function ajRenderLineas() {
+    const tbody = document.getElementById('ajuste-tbody');
+    document.getElementById('ajuste-count').textContent = ajusteLineas.length;
+    if (!ajusteLineas.length) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--t2);">Agregue líneas para comenzar el ajuste</td></tr>';
+        return;
+    }
+    tbody.innerHTML = ajusteLineas.map((l,i) => {
+        const diff = l.nuevo - l.anterior;
+        const diffColor = diff > 0 ? 'var(--gr)' : diff < 0 ? 'var(--re)' : 'var(--t2)';
+        const diffStr  = diff > 0 ? `+${diff}` : String(diff);
+        return `<tr>
+            <td style="font-size:12px;color:var(--t2);">${l.col}</td>
+            <td style="font-weight:700;">${l.pre}</td>
+            <td style="text-align:center;font-weight:800;color:var(--ac);">${l.tal}</td>
+            <td style="text-align:center;font-family:'JetBrains Mono';color:var(--t2);">${l.anterior}</td>
+            <td style="text-align:center;font-family:'JetBrains Mono';font-weight:800;font-size:16px;">${l.nuevo}</td>
+            <td style="text-align:center;font-family:'JetBrains Mono';font-weight:800;color:${diffColor};">${diffStr}</td>
+            <td style="text-align:center;">
+                <button onclick="ajusteLineas.splice(${i},1);ajRenderLineas()"
+                        style="background:var(--re);border:none;color:#fff;padding:6px 10px;
+                               border-radius:5px;cursor:pointer;font-size:12px;">✕</button>
+            </td>
+        </tr>`;
+    }).join('');
+}
+
+function ajLimpiar() {
+    ajusteLineas = [];
+    ajRenderLineas();
+    document.getElementById('ajObs').value = '';
+    document.getElementById('ajCol').value = '';
+    document.getElementById('ajPren').innerHTML = '<option value="">— Seleccione —</option>';
+    document.getElementById('ajTal').innerHTML  = '<option value="">— Seleccione —</option>';
+    document.getElementById('ajQty').value = '0';
+}
+
+async function ajGuardar() {
+    if (!ajusteLineas.length) return alert('No hay líneas para guardar.');
+    const fecha     = document.getElementById('ajFecha').value || new Date().toISOString().split('T')[0];
+    const vendedor  = document.getElementById('ajVendedor').value || 'Admin';
+    const obs       = document.getElementById('ajObs').value || '';
+    const btn = document.getElementById('btnGuardarAjuste');
+    btn.disabled = true; btn.textContent = 'GUARDANDO...';
+    try {
+        const res = await fetch('/api/ajuste-inventario', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ fecha, vendedor, obs, lineas: ajusteLineas })
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        // Aplicar cambios en memoria local de stock
+        ajusteLineas.forEach(l => { stock[l.key] = l.nuevo; });
+        alert(`✅ Ajuste guardado — ${ajusteLineas.length} ítem(s) actualizados.`);
+        ajLimpiar();
+        ajCargarHistorial();
+    } catch(e) {
+        alert(`❌ Error al guardar: ${e.message}`);
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> GUARDAR AJUSTE DE INVENTARIO';
+    }
+}
+
+async function ajCargarHistorial() {
+    const tbody = document.getElementById('historial-tbody');
+    if (!tbody) return;
+    try {
+        const data = await fetch('/api/ajuste-inventario').then(r=>r.json()).catch(()=>[]);
+        if (!data.length) {
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--t2);">Sin ajustes registrados aún</td></tr>';
+            return;
+        }
+        // Aplanar: cada ajuste puede tener N líneas
+        const rows = [];
+        data.slice().reverse().forEach(aj => {
+            (aj.lineas||[]).forEach(l => rows.push({...l, fecha:aj.fecha, vendedor:aj.vendedor, obs:aj.obs}));
+        });
+        tbody.innerHTML = rows.map(r => {
+            const diff = r.nuevo - r.anterior;
+            const dc = diff > 0 ? 'var(--gr)' : diff < 0 ? 'var(--re)' : 'var(--t2)';
+            return `<tr>
+                <td style="font-family:'JetBrains Mono';font-size:12px;">${r.fecha}</td>
+                <td style="font-weight:700;font-size:12px;">${r.vendedor}</td>
+                <td style="font-size:12px;color:var(--t2);">${r.col}</td>
+                <td style="font-size:12px;">${r.pre}</td>
+                <td style="text-align:center;font-weight:800;color:var(--ac);">${r.tal}</td>
+                <td style="text-align:center;font-family:'JetBrains Mono';color:var(--t2);">${r.anterior}</td>
+                <td style="text-align:center;font-family:'JetBrains Mono';font-weight:800;color:${dc};">
+                    ${r.nuevo} (${diff>=0?'+':''}${diff})
+                </td>
+                <td style="font-size:11px;color:var(--t2);">${r.obs||'—'}</td>
+            </tr>`;
+        }).join('');
+    } catch(e) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--re);">Error cargando historial</td></tr>';
+    }
+}
+
 window.addEventListener('DOMContentLoaded', () => {
     const vf=document.getElementById('vFecha'); if(vf) vf.valueAsDate=new Date();
+    const af=document.getElementById('ajFecha'); if(af) af.valueAsDate=new Date();
     initFechas(); init();
     const params = new URLSearchParams(window.location.search);
     const vista = params.get('view');

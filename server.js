@@ -34,6 +34,7 @@ process.on('uncaughtException', (err) => {
 // ── Archivos mutables (van al disco persistente) ─────────────
 const MUTABLE = new Set([
     'stock.json', 'ventas.json', 'ingresos.json',
+    'ajustes_inventario.json',
     'vma_insumos.csv', 'vma_recetas.csv', 'vma_precios_matriz.csv'
 ]);
 
@@ -255,6 +256,45 @@ app.post('/api/guardar-compra', (req, res) => {
         res.json({ ok: true });
     } catch (err) {
         console.error('/api/guardar-compra:', err.message);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ══════════════════════════════════════════════════════════════
+//  AJUSTE DE INVENTARIO — lee y escribe con log de auditoría
+// ══════════════════════════════════════════════════════════════
+app.get('/api/ajuste-inventario', (req, res) => {
+    res.json(getJSON('ajustes_inventario.json'));
+});
+
+app.post('/api/ajuste-inventario', (req, res) => {
+    try {
+        const { fecha, vendedor, obs, lineas } = req.body || {};
+        if (!Array.isArray(lineas) || !lineas.length)
+            return res.status(400).json({ error: 'Sin líneas' });
+
+        // Actualizar stock: REEMPLAZA (no suma) el valor por producto
+        const stock = getJSON('stock.json', true);
+        lineas.forEach(({ key, nuevo }) => {
+            if (key && nuevo !== undefined) stock[key] = parseInt(nuevo) || 0;
+        });
+        saveJSON('stock.json', stock);
+
+        // Log de auditoría
+        const ajustes = getJSON('ajustes_inventario.json');
+        ajustes.push({
+            id: Date.now(),
+            fecha: fecha || new Date().toISOString().split('T')[0],
+            vendedor: vendedor || 'Admin',
+            obs: obs || '',
+            lineas,
+            timestamp: new Date().toISOString()
+        });
+        saveJSON('ajustes_inventario.json', ajustes);
+
+        res.json({ ok: true, actualizados: lineas.length });
+    } catch (err) {
+        console.error('/api/ajuste-inventario:', err.message);
         res.status(500).json({ error: err.message });
     }
 });
