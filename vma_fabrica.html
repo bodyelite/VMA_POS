@@ -9,18 +9,20 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
 <style>
   :root {
-    --sidebar-bg: #f8f9fb;
+    --sidebar-bg: #1e3a5f;
     --sidebar-w: 220px;
-    --accent:  #d97706;
-    --accent2: #b45309;
-    --surface: #f0f2f7;
+    --accent: #f0a500;
+    --accent2: #e05c00;
+    --surface: #f1f5f9;
     --surface2: #ffffff;
-    --border:  #e2e8f0;
-    --text:    #1e293b;
-    --muted:   #64748b;
-    --green:   #16a34a;
-    --red:     #dc2626;
+    --border: #e2e8f0;
+    --text: #1e293b;
+    --muted: #64748b;
+    --green: #16a34a;
+    --red: #dc2626;
     --font-ui: 'Segoe UI', system-ui, sans-serif;
+    --sha: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.05);
+    --sha2: 0 4px 12px rgba(0,0,0,.10);
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -30,8 +32,7 @@
     background: var(--surface);
     color: var(--text);
     display: flex;
-    height: 100vh;
-    overflow: hidden;
+    min-height: 100vh;
   }
 
   #sidebar {
@@ -39,13 +40,17 @@
     background: var(--sidebar-bg);
     display: flex;
     flex-direction: column;
-    border-right: 1px solid var(--border);
+    border-right: 1px solid rgba(255,255,255,.1);
     flex-shrink: 0;
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    z-index: 100;
+    transition: transform .25s ease;
   }
 
   .sidebar-logo {
     padding: 22px 18px 16px;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid rgba(255,255,255,.12);
   }
 
   .sidebar-logo .brand {
@@ -58,7 +63,7 @@
 
   .sidebar-logo .subtitle {
     font-size: 0.68rem;
-    color: var(--muted);
+    color: rgba(255,255,255,.5);
     margin-top: 2px;
     letter-spacing: 0.04em;
   }
@@ -68,8 +73,8 @@
     font-weight: 700;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: var(--muted);
-    padding: 18px 18px 6px;
+    color: rgba(255,255,255,.35);
+    padding: 16px 18px 6px;
   }
 
   .nav-item {
@@ -79,18 +84,18 @@
     padding: 10px 18px;
     cursor: pointer;
     font-size: 0.85rem;
-    color: var(--muted);
+    color: rgba(255,255,255,.55);
     border-left: 3px solid transparent;
     transition: all 0.15s;
     text-decoration: none;
   }
 
-  .nav-item:hover { color: var(--text); background: rgba(0,0,0,0.05); }
+  .nav-item:hover { color: #fff; background: rgba(255,255,255,.07); }
 
   .nav-item.active {
     color: var(--accent);
     border-left-color: var(--accent);
-    background: rgba(217,119,6,0.09);
+    background: rgba(240,165,0,.12);
     font-weight: 600;
   }
 
@@ -98,35 +103,36 @@
 
   .sidebar-divider {
     border: none;
-    border-top: 1px solid var(--border);
-    margin: 10px 0;
+    border-top: 1px solid rgba(255,255,255,.1);
+    margin: 8px 0;
   }
 
   .sidebar-bottom {
     margin-top: auto;
     padding: 14px 18px;
-    border-top: 1px solid var(--border);
-    font-size: 0.72rem;
-    color: var(--muted);
+    border-top: 1px solid rgba(255,255,255,.1);
+    font-size: 0.7rem;
+    color: rgba(255,255,255,.35);
   }
 
   .back-link {
     display: flex;
     align-items: center;
     gap: 7px;
-    color: var(--muted);
+    color: rgba(255,255,255,.45);
     text-decoration: none;
     font-size: 0.8rem;
     padding: 8px 18px;
     transition: color 0.15s;
   }
-  .back-link:hover { color: var(--text); }
+  .back-link:hover { color: #fff; }
 
   #main {
     flex: 1;
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    margin-left: var(--sidebar-w);
   }
 
   .topbar {
@@ -134,8 +140,9 @@
     align-items: center;
     justify-content: space-between;
     padding: 14px 28px;
-    background: var(--sidebar-bg);
-    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+    border-bottom: 2px solid var(--border);
+    box-shadow: var(--sha);
     flex-shrink: 0;
   }
 
@@ -150,9 +157,9 @@
     font-weight: 700;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    background: rgba(217,119,6,0.12);
+    background: rgba(240,165,0,0.15);
     color: var(--accent);
-    border: 1px solid rgba(217,119,6,0.3);
+    border: 1px solid rgba(240,165,0,0.3);
     padding: 3px 10px;
     border-radius: 20px;
   }
@@ -160,8 +167,9 @@
   .tab-bar {
     display: flex;
     gap: 0;
-    background: var(--sidebar-bg);
-    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+    border-bottom: 2px solid var(--border);
+    box-shadow: var(--sha);
     padding: 0 28px;
     flex-shrink: 0;
   }
@@ -239,7 +247,7 @@
   .btn-primary:hover { background: #ffb81a; }
 
   .btn-secondary {
-    background: #ffffff;
+    background: var(--surface2);
     color: var(--text);
     border: 1px solid var(--border);
   }
@@ -259,7 +267,7 @@
   }
 
   .vma-table th {
-    background: var(--sidebar-bg);
+    background: var(--bg, #f8fafc);
     padding: 10px 14px;
     text-align: left;
     font-size: 0.68rem;
@@ -278,7 +286,7 @@
 
   .vma-table tr:last-child td { border-bottom: none; }
 
-  .vma-table tr:hover td { background: rgba(0,0,0,0.025); }
+  .vma-table tr:hover td { background: rgba(255,255,255,0.03); }
 
   .pill {
     display: inline-flex;
@@ -409,6 +417,46 @@
     display: flex;
     justify-content: flex-end;
     gap: 10px;
+  }
+
+
+  /* ── RESPONSIVE MOBILE ──────────────────────────────────── */
+  @media (max-width: 768px) {
+    #sidebar { transform: translateX(-100%); }
+    #sidebar.mob-open {
+      transform: translateX(0);
+      box-shadow: 4px 0 20px rgba(0,0,0,.25);
+    }
+    #main { margin-left: 0; }
+
+    .tab-bar { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .tab-btn  { flex-shrink: 0; padding: 10px 14px; font-size: 0.75rem; }
+    .tab-content { padding: 14px; }
+
+    .compras-layout { grid-template-columns: 1fr !important; }
+    .form-row-2     { grid-template-columns: 1fr !important; }
+    .recetas-layout { grid-template-columns: 1fr !important; }
+    .stats-row      { grid-template-columns: 1fr 1fr; }
+    .receta-meta-row { grid-template-columns: 1fr !important; }
+
+    .vma-table-wrap { overflow-x: auto; }
+    .vma-table      { min-width: 560px; }
+
+    .agregar-grid { grid-template-columns: 1fr 1fr !important; }
+    .agregar-grid > *:last-child { grid-column: 1 / -1; }
+
+    .resumen-card { position: static !important; }
+
+    #overlay-etiqueta .modal { width: 95vw !important; max-width: 95vw !important; }
+    .modal { width: 96vw !important; max-width: 96vw !important; padding: 18px !important; }
+
+    .plantilla-bar { overflow-x: auto; -webkit-overflow-scrolling: touch; flex-wrap: nowrap; }
+
+    .talla-selector { overflow-x: auto; flex-wrap: nowrap; padding-bottom: 4px; }
+    .talla-btn      { flex-shrink: 0; min-width: 44px; min-height: 44px; }
+
+    .btn { min-height: 40px; }
+    .btn-del { padding: 6px 12px; font-size: 0.88rem; }
   }
 
   ::-webkit-scrollbar { width: 6px; }
@@ -565,7 +613,7 @@
   .separator { border: none; border-top: 1px solid var(--border); margin: 14px 0; }
   .log-entry { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; border-bottom: 1px solid var(--border); transition: background 0.1s; }
   .log-entry:last-child { border-bottom: none; }
-  .log-entry:hover { background: rgba(0,0,0,0.02); }
+  .log-entry:hover { background: rgba(255,255,255,0.02); }
   .log-entry .le-top { display: flex; justify-content: space-between; align-items: center; }
   .log-entry .le-nombre { font-weight: 700; font-size: 0.82rem; }
   .log-entry .le-pmp { color: var(--accent); font-weight: 800; font-size: 0.82rem; }
@@ -579,8 +627,8 @@
   .recetas-layout { display: grid; grid-template-columns: 1fr 300px; gap: 22px; align-items: start; }
   .plantilla-bar { display: flex; align-items: center; gap: 10px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; flex-wrap: wrap; }
   .plantilla-bar span { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-right: 4px; }
-  .btn-plantilla { padding: 7px 14px; border-radius: 6px; border: 1px solid var(--accent); background: rgba(217,119,6,0.08); color: var(--accent); font-size: 0.78rem; font-weight: 700; cursor: pointer; transition: all 0.15s; display: inline-flex; align-items: center; gap: 6px; }
-  .btn-plantilla:hover { background: rgba(217,119,6,0.18); }
+  .btn-plantilla { padding: 7px 14px; border-radius: 6px; border: 1px solid var(--accent); background: rgba(240,165,0,0.08); color: var(--accent); font-size: 0.78rem; font-weight: 700; cursor: pointer; transition: all 0.15s; display: inline-flex; align-items: center; gap: 6px; }
+  .btn-plantilla:hover { background: rgba(240,165,0,0.18); }
   .receta-meta-row { display: grid; grid-template-columns: 1fr 1fr 120px; gap: 12px; margin-bottom: 14px; }
   .btn-del { padding: 3px 8px; background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.25); border-radius: 5px; color: var(--red); font-size: 0.8rem; cursor: pointer; transition: all 0.15s; }
   .btn-del:hover { background: rgba(239,68,68,0.22); }
@@ -615,8 +663,8 @@
   .receta-actions button { flex: 1; }
   .talla-selector { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
   .talla-btn { padding: 5px 12px; border-radius: 5px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-size: 0.78rem; font-weight: 700; cursor: pointer; transition: all 0.15s; }
-  .talla-btn.active, .talla-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(217,119,6,0.08); }
-  .resumen-linea.talla-activa-row { background: rgba(217,119,6,0.07); border-radius: 4px; padding-left: 6px; padding-right: 6px; }
+  .talla-btn.active, .talla-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(240,165,0,0.08); }
+  .resumen-linea.talla-activa-row { background: rgba(240,165,0,0.06); border-radius: 4px; padding-left: 6px; padding-right: 6px; }
   .resumen-linea.talla-activa-row .rl-nombre { color: var(--accent); }
   .resumen-linea.talla-activa-row .rl-valor  { color: var(--accent); }
 
@@ -627,6 +675,8 @@
 </head>
 <body>
 
+<div id="mob-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:99" onclick="closeSidebar()"></div>
+
 <nav id="sidebar">
   <div class="sidebar-logo">
     <div class="brand">VMA Uniformes</div>
@@ -635,17 +685,20 @@
   <a class="back-link" href="vma_pos.html">← Volver al POS</a>
   <hr class="sidebar-divider">
   <div class="sidebar-module-label">Costos & Fabricación</div>
-  <div class="nav-item active" onclick="switchTab('insumos')"><span class="icon">🧵</span> Maestro de Insumos</div>
-  <div class="nav-item" onclick="switchTab('compras')"><span class="icon">🛒</span> Ingreso Compras</div>
-  <div class="nav-item" onclick="switchTab('recetas')"><span class="icon">📋</span> Recetas / Escandallo</div>
-  <div class="nav-item" onclick="switchTab('ordenes')"><span class="icon">📦</span> Catálogo de Costos</div>
-  <div class="nav-item" onclick="switchTab('costos')"><span class="icon">📊</span> Análisis de Costos</div>
+  <div class="nav-item active" onclick="switchTab('insumos');closeSidebar()"><span class="icon">🧵</span> Maestro de Insumos</div>
+  <div class="nav-item" onclick="switchTab('compras');closeSidebar()"><span class="icon">🛒</span> Ingreso Compras</div>
+  <div class="nav-item" onclick="switchTab('recetas');closeSidebar()"><span class="icon">📋</span> Recetas / Escandallo</div>
+  <div class="nav-item" onclick="switchTab('ordenes');closeSidebar()"><span class="icon">📦</span> Catálogo de Costos</div>
+  <div class="nav-item" onclick="switchTab('costos');closeSidebar()"><span class="icon">📊</span> Análisis de Costos</div>
   <div class="sidebar-bottom">VMA ERP · Fábrica<br><span id="csv-status" style="color:var(--accent)">CSV no cargado</span></div>
 </nav>
 
 <div id="main">
   <div class="topbar">
-    <div class="topbar-title" id="topbar-title">🧵 Maestro de Insumos</div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <button id="mob-menu-btn" onclick="openSidebar()" style="display:none;background:none;border:none;cursor:pointer;font-size:1.3rem;color:var(--text);padding:4px;">☰</button>
+      <div class="topbar-title" id="topbar-title">🧵 Maestro de Insumos</div>
+    </div>
     <div class="topbar-badge">FABRICACIÓN</div>
   </div>
 
@@ -862,77 +915,6 @@
 
 <script>
 let insumos = []; let recetas = []; let logCompras = []; let preciosMatriz = []; let recetasCSV = [];
-
-const sanitizarCosto = v => parseInt((v || '').toString().replace(/[^0-9]/g, '')) || 0;
-
-const RECETAS_TIPO = {
-  polera:   [ {kw:'tela',cat:'Tela',unidad:'metro',merma:5,tipo:'Tela'}, {kw:'hilo',cat:'Hilo',unidad:'rollo',merma:8,tipo:'Avío'}, {kw:'confec',cat:'Confección',unidad:'servicio',merma:0,tipo:'Confección'}, {kw:'boton',cat:'Botón',unidad:'unidad',merma:5,tipo:'Avío'}, {kw:'bordado',cat:'Avío',unidad:'servicio',merma:0,tipo:'Bordado'}, {kw:'bolsa',cat:'Empaque',unidad:'unidad',merma:0,tipo:'Empaque'} ],
-  poleron:  [ {kw:'tela',cat:'Tela',unidad:'metro',merma:6,tipo:'Tela'}, {kw:'hilo',cat:'Hilo',unidad:'rollo',merma:8,tipo:'Avío'}, {kw:'confec',cat:'Confección',unidad:'servicio',merma:0,tipo:'Confección'}, {kw:'cierre',cat:'Avío',unidad:'unidad',merma:2,tipo:'Avío'}, {kw:'bordado',cat:'Avío',unidad:'servicio',merma:0,tipo:'Bordado'}, {kw:'bolsa',cat:'Empaque',unidad:'unidad',merma:0,tipo:'Empaque'} ],
-  pantalon: [ {kw:'tela',cat:'Tela',unidad:'metro',merma:7,tipo:'Tela'}, {kw:'hilo',cat:'Hilo',unidad:'rollo',merma:8,tipo:'Avío'}, {kw:'confec',cat:'Confección',unidad:'servicio',merma:0,tipo:'Confección'}, {kw:'elast',cat:'Avío',unidad:'metro',merma:3,tipo:'Avío'}, {kw:'cierre',cat:'Avío',unidad:'unidad',merma:2,tipo:'Avío'}, {kw:'bolsa',cat:'Empaque',unidad:'unidad',merma:0,tipo:'Empaque'} ],
-  short:    [ {kw:'tela',cat:'Tela',unidad:'metro',merma:5,tipo:'Tela'}, {kw:'hilo',cat:'Hilo',unidad:'rollo',merma:8,tipo:'Avío'}, {kw:'confec',cat:'Confección',unidad:'servicio',merma:0,tipo:'Confección'}, {kw:'elast',cat:'Avío',unidad:'metro',merma:3,tipo:'Avío'}, {kw:'bolsa',cat:'Empaque',unidad:'unidad',merma:0,tipo:'Empaque'} ],
-  calza:    [ {kw:'tela',cat:'Tela',unidad:'metro',merma:5,tipo:'Tela'}, {kw:'hilo',cat:'Hilo',unidad:'rollo',merma:8,tipo:'Avío'}, {kw:'confec',cat:'Confección',unidad:'servicio',merma:0,tipo:'Confección'}, {kw:'elast',cat:'Avío',unidad:'metro',merma:3,tipo:'Avío'} ],
-  parka:    [ {kw:'tela',cat:'Tela',unidad:'metro',merma:8,tipo:'Tela'}, {kw:'hilo',cat:'Hilo',unidad:'rollo',merma:8,tipo:'Avío'}, {kw:'confec',cat:'Confección',unidad:'servicio',merma:0,tipo:'Confección'}, {kw:'cierre',cat:'Avío',unidad:'unidad',merma:2,tipo:'Avío'}, {kw:'forro',cat:'Tela',unidad:'metro',merma:5,tipo:'Tela'}, {kw:'bolsa',cat:'Empaque',unidad:'unidad',merma:0,tipo:'Empaque'} ],
-  polar:    [ {kw:'polar',cat:'Tela',unidad:'metro',merma:6,tipo:'Tela'}, {kw:'hilo',cat:'Hilo',unidad:'rollo',merma:8,tipo:'Avío'}, {kw:'confec',cat:'Confección',unidad:'servicio',merma:0,tipo:'Confección'}, {kw:'cierre',cat:'Avío',unidad:'unidad',merma:2,tipo:'Avío'}, {kw:'bolsa',cat:'Empaque',unidad:'unidad',merma:0,tipo:'Empaque'} ],
-  delantal: [ {kw:'tela',cat:'Tela',unidad:'metro',merma:5,tipo:'Tela'}, {kw:'hilo',cat:'Hilo',unidad:'rollo',merma:8,tipo:'Avío'}, {kw:'confec',cat:'Confección',unidad:'servicio',merma:0,tipo:'Confección'}, {kw:'boton',cat:'Botón',unidad:'unidad',merma:5,tipo:'Avío'}, {kw:'bolsa',cat:'Empaque',unidad:'unidad',merma:0,tipo:'Empaque'} ],
-  falda:    [ {kw:'tela',cat:'Tela',unidad:'metro',merma:6,tipo:'Tela'}, {kw:'hilo',cat:'Hilo',unidad:'rollo',merma:8,tipo:'Avío'}, {kw:'confec',cat:'Confección',unidad:'servicio',merma:0,tipo:'Confección'}, {kw:'cierre',cat:'Avío',unidad:'unidad',merma:2,tipo:'Avío'}, {kw:'bolsa',cat:'Empaque',unidad:'unidad',merma:0,tipo:'Empaque'} ],
-  chaqueta: [ {kw:'tela',cat:'Tela',unidad:'metro',merma:8,tipo:'Tela'}, {kw:'hilo',cat:'Hilo',unidad:'rollo',merma:8,tipo:'Avío'}, {kw:'confec',cat:'Confección',unidad:'servicio',merma:0,tipo:'Confección'}, {kw:'boton',cat:'Botón',unidad:'unidad',merma:5,tipo:'Avío'}, {kw:'forro',cat:'Tela',unidad:'metro',merma:5,tipo:'Tela'}, {kw:'bolsa',cat:'Empaque',unidad:'unidad',merma:0,tipo:'Empaque'} ],
-  sweater:  [ {kw:'hilo',cat:'Hilo',unidad:'rollo',merma:8,tipo:'Avío'}, {kw:'confec',cat:'Confección',unidad:'servicio',merma:0,tipo:'Confección'}, {kw:'bolsa',cat:'Empaque',unidad:'unidad',merma:0,tipo:'Empaque'} ],
-  calceta:  [ {kw:'hilo',cat:'Hilo',unidad:'rollo',merma:10,tipo:'Avío'}, {kw:'confec',cat:'Confección',unidad:'servicio',merma:0,tipo:'Confección'} ],
-  corbata:  [ {kw:'tela',cat:'Tela',unidad:'metro',merma:6,tipo:'Tela'}, {kw:'hilo',cat:'Hilo',unidad:'rollo',merma:5,tipo:'Avío'}, {kw:'confec',cat:'Confección',unidad:'servicio',merma:0,tipo:'Confección'} ],
-  default:  [ {kw:'tela',cat:'Tela',unidad:'metro',merma:5,tipo:'Tela'}, {kw:'hilo',cat:'Hilo',unidad:'rollo',merma:8,tipo:'Avío'}, {kw:'confec',cat:'Confección',unidad:'servicio',merma:0,tipo:'Confección'}, {kw:'bolsa',cat:'Empaque',unidad:'unidad',merma:0,tipo:'Empaque'} ]
-};
-
-function detectarTipoReceta(prenda) {
-  const p = (prenda || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
-  if (p.includes('poleron') || p.includes('polerón')) return 'poleron';
-  if (p.includes('polera') || p.includes('polo')) return 'polera';
-  if (p.includes('pantalon') || p.includes('buzo')) return 'pantalon';
-  if (p.includes('short')) return 'short';
-  if (p.includes('calza')) return 'calza';
-  if (p.includes('calceta')) return 'calceta';
-  if (p.includes('parka')) return 'parka';
-  if (p.includes('polar')) return 'polar';
-  if (p.includes('delantal') || p.includes('cotona')) return 'delantal';
-  if (p.includes('falda')) return 'falda';
-  if (p.includes('chaqueta') || p.includes('americana')) return 'chaqueta';
-  if (p.includes('sweater') || p.includes('jockey')) return 'sweater';
-  if (p.includes('corbata')) return 'corbata';
-  return 'default';
-}
-
-function cargarRecetaTipo(prenda) {
-  if (!insumos.length) return;
-  const tipo = detectarTipoReceta(prenda);
-  const plantilla = RECETAS_TIPO[tipo] || RECETAS_TIPO.default;
-  const lineaBase = plantilla.map(tmpl => {
-    const norm = s => (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
-    const idx = insumos.findIndex(ins => norm(ins.nombre).includes(tmpl.kw) || norm(ins.categoria).includes(norm(tmpl.cat)));
-    const ins = idx >= 0 ? insumos[idx] : null;
-    return {
-      nombre:      ins ? ins.nombre : tmpl.cat + ' (no cargado)',
-      id_insumo:   ins ? ins.id_insumo : '—',
-      insumo_idx:  idx,
-      categoria:   ins ? ins.categoria : tmpl.cat,
-      unidad:      ins ? ins.unidad : tmpl.unidad,
-      cant_base:   null,
-      cant_neta:   0,
-      merma:       ins ? (parseFloat(ins.merma_pct) || tmpl.merma) : tmpl.merma,
-      cant_bruta:  0,
-      pmp:         ins ? (sanitizarCosto(ins.costo_pmp) || 0) : 0,
-      costo_linea: 0,
-      tipo:        tmpl.tipo
-    };
-  });
-  matrizTallas = {};
-  TALLAS_REC.forEach(t => { matrizTallas[t] = structuredClone(lineaBase); });
-  recetaActiva = matrizTallas[tallaActiva];
-  const btnMaq = document.getElementById('btn-maqueta');
-  if (btnMaq) { btnMaq.textContent = `⚡ Maqueta: ${tipo.charAt(0).toUpperCase()+tipo.slice(1)}`; btnMaq.style.opacity = '1'; }
-  document.getElementById('r-id').value = 'REC-NUEVO';
-  renderRecetaActiva();
-  calcularCostoTotalReceta();
-  toast(`📐 Receta base "${tipo}" cargada — ajusta cantidades y elimina lo que no aplica`, 'ok', 4500);
-}
 const TABS = ['insumos', 'compras', 'recetas', 'ordenes', 'costos'];
 const TITLES = { insumos: '🧵 Maestro de Insumos', compras: '🛒 Ingreso de Compras', recetas: '📋 Recetas / Escandallo', ordenes: '📦 Catálogo de Costos', costos: '📊 Análisis de Costos' };
 
@@ -957,7 +939,7 @@ function parsearInsumos(csvText) {
   Papa.parse(csvText, {
     header: true, skipEmptyLines: true,
     complete: r => {
-      insumos = r.data.map(row => ({ ...row, stock_actual: parseFloat(row.stock_actual) || 0, costo_pmp: sanitizarCosto(row.costo_pmp), ultimo_costo: sanitizarCosto(row.ultimo_costo), merma_pct: parseFloat(row.merma_pct) || 0 }));
+      insumos = r.data.map(row => ({ ...row, stock_actual: parseFloat(row.stock_actual) || 0, costo_pmp: parseFloat(row.costo_pmp) || 0, ultimo_costo: parseFloat(row.ultimo_costo) || 0, merma_pct: parseFloat(row.merma_pct) || 0 }));
       renderInsumos(); poblarSelectorInsumos();
       const status = document.getElementById('csv-status');
       if (status) { const base = status.textContent.replace(/^insumos:[^·]*/, '').replace(/^\s*·\s*/, ''); status.textContent = `insumos: ${insumos.length} · ${base}`.replace(/\s*·\s*$/, ''); }
@@ -1037,10 +1019,18 @@ async function guardarEscandallo() {
     recetasCSV.push(...rows);
     const r2 = await fetch('/api/actualizar-matriz', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ colegio, prenda, costos, skuBase, skus }) });
     if (!r2.ok) throw new Error(`actualizar-matriz: ${r2.status}`);
-    const costoPromedio = Math.round(Object.values(costos).filter(v => v > 0).reduce((a, b) => a + b, 0) / (Object.values(costos).filter(v => v > 0).length || 1));
+    const _costosProm = Object.values(costos).filter(v => v > 0);
+    const costoPromedio = _costosProm.length ? Math.round(_costosProm.reduce((a, b) => a + b, 0) / _costosProm.length) : 0;
     preciosMatriz.forEach(r => {
       if ((r.COLEGIO || '').trim() === colegio && (r.PRENDA || '').trim() === prenda) {
-        r.COSTO = costoPromedio; r.SKU = skuBase;
+        const talla = (r.TALLA || r.talla || '').toString().trim();
+        if (talla && costos[talla] > 0) {
+          r.COSTO = costos[talla];
+          r.SKU   = skus[talla] || skuBase;
+        } else {
+          r.COSTO = costoPromedio;
+          r.SKU   = skuBase;
+        }
       }
     });
     toast(`💾 Guardado · SKU: ${skuBase} · ${rows.length} líneas`, 'ok', 4500);
@@ -1143,7 +1133,7 @@ function renderCatalogo() {
       const costo = parseFloat(r.COSTO) || 0;
       const skuEtq = generarSKU(colegio, prenda, talla);
       html += `
-        <tr data-group="${groupId}" style="display:none;background:rgba(0,0,0,0.025)">
+        <tr data-group="${groupId}" style="display:none;background:rgba(15,17,23,0.55)">
           <td style="padding-left:28px;color:var(--muted);font-size:0.75rem;border-left:3px solid var(--border)">↳</td>
           <td style="font-size:0.82rem;color:var(--muted)">${prenda}</td>
           <td style="text-align:center;font-weight:800;color:var(--accent)">${talla}</td>
@@ -1179,8 +1169,8 @@ function limpiarFiltrosCatalogo() { const sc = document.getElementById('cat-filt
 function poblarSelectColegio() { const sel = document.getElementById('r-colegio'); if (!sel) return; const colegios = [...new Set(preciosMatriz.map(r => r.COLEGIO).filter(Boolean))].sort(); sel.innerHTML = '<option value="">— Seleccionar Colegio —</option>' + colegios.map(c => `<option value="${c}">${c}</option>`).join(''); document.getElementById('r-prenda').innerHTML = '<option value="">— Seleccionar Artículo —</option>'; }
 function onColegioChange() { const colegio = document.getElementById('r-colegio').value; const selPrenda = document.getElementById('r-prenda'); document.getElementById('r-producto').value = ''; if (!colegio) { selPrenda.innerHTML = '<option value="">— Seleccionar Artículo —</option>'; calcularCostoTotalReceta(); return; } const prendas = [...new Set(preciosMatriz.filter(r => r.COLEGIO === colegio).map(r => r.PRENDA).filter(Boolean))].sort(); selPrenda.innerHTML = '<option value="">— Seleccionar Artículo —</option>' + prendas.map(p => `<option value="${p}">${p}</option>`).join(''); calcularCostoTotalReceta(); }
 function onPrendaChange() { const colegio = document.getElementById('r-colegio').value; const prenda = document.getElementById('r-prenda').value; document.getElementById('r-producto').value = prenda ? `${colegio} — ${prenda}` : ''; if (colegio && prenda) { intentarCargarReceta(colegio, prenda); } else { calcularCostoTotalReceta(); } }
-function intentarCargarReceta(colegio, prenda) { const producto = `${colegio} — ${prenda}`; const filas = recetasCSV.filter(r => r.producto === producto); const btnMaq = document.getElementById('btn-maqueta'); if (filas.length > 0) { cargarRecetaDesdeMemoria(filas); if (btnMaq) { btnMaq.textContent = '✏️ Modo Edición'; btnMaq.style.opacity = '0.5'; } toast(`✅ Receta cargada: ${producto}`, 'ok'); } else { cargarRecetaTipo(prenda); if (btnMaq) { btnMaq.style.opacity = '1'; } } }
-function cargarRecetaDesdeMemoria(filas) { matrizTallas = {}; TALLAS_REC.forEach(t => { matrizTallas[t] = []; }); const porTalla = {}; filas.forEach(f => { const t = f.talla || f.TALLA; if (!t) return; if (!porTalla[t]) porTalla[t] = []; porTalla[t].push(f); }); Object.entries(porTalla).forEach(([talla, lineasCSV]) => { if (!matrizTallas[talla]) matrizTallas[talla] = []; matrizTallas[talla] = lineasCSV.map(f => { const idx = insumos.findIndex(ins => ins.id_insumo === f.id_insumo); const pmp = idx >= 0 ? (sanitizarCosto(insumos[idx].costo_pmp) || 0) : (sanitizarCosto(f.costo_unitario_pmp) || 0); const cantNeta = parseFloat(f.cantidad) || 0; const merma = parseFloat(f.merma_pct) || 0; const cantBruta = +(cantNeta * (1 + merma / 100)).toFixed(4); return { nombre: f.nombre_insumo, id_insumo: f.id_insumo, insumo_idx: idx, categoria: idx >= 0 ? insumos[idx].categoria : '', unidad: f.unidad, cant_base: null, cant_neta: cantNeta, merma, cant_bruta: cantBruta, pmp, costo_linea: +(cantBruta * pmp).toFixed(0), tipo: f.tipo_componente || catToTipo(idx >= 0 ? insumos[idx].categoria : '') }; }); }); recetaActiva = matrizTallas[tallaActiva] ?? []; const idRec = filas[0]?.id_receta || 'REC-EDIT'; document.getElementById('r-id').value = idRec; renderRecetaActiva(); calcularCostoTotalReceta(); }
+function intentarCargarReceta(colegio, prenda) { const producto = `${colegio} — ${prenda}`; const filas = recetasCSV.filter(r => r.producto === producto); const btnMaq = document.getElementById('btn-maqueta'); if (filas.length > 0) { cargarRecetaDesdeMemoria(filas); if (btnMaq) { btnMaq.textContent = '✏️ Modo Edición'; btnMaq.style.opacity = '0.5'; } toast(`✅ Receta cargada: ${producto}`, 'ok'); } else { matrizTallas = {}; recetaActiva = []; document.getElementById('r-id').value = ''; renderRecetaActiva(); calcularCostoTotalReceta(); if (btnMaq) { btnMaq.textContent = '⚡ Cargar Maqueta Maestra'; btnMaq.style.opacity = '1'; } } }
+function cargarRecetaDesdeMemoria(filas) { matrizTallas = {}; TALLAS_REC.forEach(t => { matrizTallas[t] = []; }); const porTalla = {}; filas.forEach(f => { const t = f.talla || f.TALLA; if (!t) return; if (!porTalla[t]) porTalla[t] = []; porTalla[t].push(f); }); Object.entries(porTalla).forEach(([talla, lineasCSV]) => { if (!matrizTallas[talla]) matrizTallas[talla] = []; matrizTallas[talla] = lineasCSV.map(f => { const idx = insumos.findIndex(ins => ins.id_insumo === f.id_insumo); const pmp = idx >= 0 ? (parseFloat(insumos[idx].costo_pmp) || 0) : (parseFloat(f.costo_unitario_pmp) || 0); const cantNeta = parseFloat(f.cantidad) || 0; const merma = parseFloat(f.merma_pct) || 0; const cantBruta = +(cantNeta * (1 + merma / 100)).toFixed(4); return { nombre: f.nombre_insumo, id_insumo: f.id_insumo, insumo_idx: idx, categoria: idx >= 0 ? insumos[idx].categoria : '', unidad: f.unidad, cant_base: null, cant_neta: cantNeta, merma, cant_bruta: cantBruta, pmp, costo_linea: +(cantBruta * pmp).toFixed(0), tipo: f.tipo_componente || catToTipo(idx >= 0 ? insumos[idx].categoria : '') }; }); }); recetaActiva = matrizTallas[tallaActiva] ?? []; const idRec = filas[0]?.id_receta || 'REC-EDIT'; document.getElementById('r-id').value = idRec; renderRecetaActiva(); calcularCostoTotalReceta(); }
 
 function generarSKU(colegio, prenda, talla) { const slug = s => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().replace(/[^A-Z0-9\s]/g, '').trim().split(/\s+/).map(w => w.slice(0, 3)).join(''); const c = slug(colegio).slice(0, 3); const p = slug(prenda).slice(0, 3); const t = talla.toString().toUpperCase().replace(/\s+/g, '').slice(0, 4); return `${c}-${p}-T${t}`; }
 function abrirEtiqueta(colegio, prenda, talla, costo) {
@@ -1218,10 +1208,27 @@ function imprimirEtiquetas() {
   w.onload = () => { w.focus(); w.print(); };
 }
 
+function openSidebar() {
+  document.getElementById('sidebar').classList.add('mob-open');
+  document.getElementById('mob-overlay').style.display = 'block';
+  document.body.style.overflow = 'hidden';
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('mob-open');
+  document.getElementById('mob-overlay').style.display = 'none';
+  document.body.style.overflow = '';
+}
+function checkMobile() {
+  const btn = document.getElementById('mob-menu-btn');
+  if (btn) btn.style.display = window.innerWidth <= 768 ? 'flex' : 'none';
+}
+window.addEventListener('resize', checkMobile);
+
 document.addEventListener('DOMContentLoaded', () => {
+  checkMobile();
   const hoy = new Date().toISOString().split('T')[0]; const fc = document.getElementById('c-fecha'); if (fc) fc.value = hoy;
   fetch('vma_insumos.csv').then(r => { if (!r.ok) throw new Error(); return r.text(); }).then(csv => { parsearInsumos(csv); const btn = document.getElementById('btn-reimportar'); if (btn) btn.style.display = 'none'; }).catch(() => { const btn = document.getElementById('btn-reimportar'); if (btn) { btn.textContent = '⚠️ Cargar CSV manualmente'; btn.classList.replace('btn-secondary', 'btn-primary'); } console.warn('vma_insumos.csv no encontrado'); });
-  fetch('vma_precios_matriz.csv').then(r => { if (!r.ok) throw new Error(); return r.text(); }).then(csv => { Papa.parse(csv, { header: true, skipEmptyLines: true, complete: res => { preciosMatriz = res.data.map(r => ({ ...r, COSTO: sanitizarCosto(r.COSTO) })); poblarSelectColegio(); poblarFiltrosCatalogo(); renderCatalogo(); const status = document.getElementById('csv-status'); if (status) { const base = status.textContent; status.textContent = `${base}${base ? ' · ' : ''}matriz: ${preciosMatriz.length} filas`; } } }); }).catch(() => console.warn('vma_precios_matriz.csv no encontrado.'));
+  fetch('vma_precios_matriz.csv').then(r => { if (!r.ok) throw new Error(); return r.text(); }).then(csv => { Papa.parse(csv, { header: true, skipEmptyLines: true, complete: res => { preciosMatriz = res.data; poblarSelectColegio(); poblarFiltrosCatalogo(); renderCatalogo(); const status = document.getElementById('csv-status'); if (status) { const base = status.textContent; status.textContent = `${base}${base ? ' · ' : ''}matriz: ${preciosMatriz.length} filas`; } } }); }).catch(() => console.warn('vma_precios_matriz.csv no encontrado.'));
   fetch('vma_recetas.csv').then(r => { if (!r.ok) throw new Error(); return r.text(); }).then(csv => { Papa.parse(csv, { header: true, skipEmptyLines: true, complete: res => { recetasCSV = res.data; renderCatalogo(); const status = document.getElementById('csv-status'); if (status) { status.textContent = `${status.textContent} · recetas: ${recetasCSV.length}`; } } }); }).catch(() => console.warn('vma_recetas.csv no encontrado.'));
 });
 </script>
