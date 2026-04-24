@@ -267,7 +267,7 @@
   }
 
   .vma-table th {
-    background: var(--bg, #f8fafc);
+    background: var(--surface);
     padding: 10px 14px;
     text-align: left;
     font-size: 0.68rem;
@@ -840,11 +840,11 @@
       <div style="display:flex;gap:14px;margin-bottom:20px;flex-wrap:wrap;">
         <div style="display:flex;flex-direction:column;gap:5px;min-width:220px;">
           <label style="font-size:0.68rem;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--muted)">Colegio</label>
-          <select id="cat-filtro-colegio" onchange="renderCatalogo()" style="background:var(--sidebar-bg);border:1px solid var(--border);border-radius:6px;padding:8px 10px;color:var(--text);font-size:0.83rem;font-family:var(--font-ui);outline:none;"><option value="">— Todos —</option></select>
+          <select id="cat-filtro-colegio" onchange="renderCatalogo()" style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:8px 10px;color:var(--text);font-size:0.83rem;font-family:var(--font-ui);outline:none;"><option value="">— Todos —</option></select>
         </div>
         <div style="display:flex;flex-direction:column;gap:5px;min-width:140px;">
           <label style="font-size:0.68rem;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--muted)">Talla</label>
-          <select id="cat-filtro-talla" onchange="renderCatalogo()" style="background:var(--sidebar-bg);border:1px solid var(--border);border-radius:6px;padding:8px 10px;color:var(--text);font-size:0.83rem;font-family:var(--font-ui);outline:none;"><option value="">— Todas —</option></select>
+          <select id="cat-filtro-talla" onchange="renderCatalogo()" style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:8px 10px;color:var(--text);font-size:0.83rem;font-family:var(--font-ui);outline:none;"><option value="">— Todas —</option></select>
         </div>
         <div style="display:flex;align-items:flex-end;">
           <button class="btn btn-secondary" style="font-size:0.78rem;padding:8px 14px" onclick="limpiarFiltrosCatalogo()">✕ Limpiar filtros</button>
@@ -1118,7 +1118,7 @@ function renderCatalogo() {
     const estadoBadge = tieneReceta ? `<span style="font-size:0.68rem;font-weight:700;padding:2px 8px;border-radius:20px;background:rgba(34,197,94,0.12);color:var(--green);border:1px solid rgba(34,197,94,0.2)">✓ Costeado</span>` : `<span style="font-size:0.68rem;font-weight:700;padding:2px 8px;border-radius:20px;background:rgba(122,127,154,0.12);color:var(--muted);border:1px solid var(--border)">Sin receta</span>`;
 
     html += `
-      <tr style="cursor:${tieneHijas ? 'pointer' : 'default'};background:var(--surface2)" onclick="${tieneHijas ? `toggleAcordeon('${groupId}','${esc(producto)}')` : ''}">
+      <tr style="cursor:${tieneHijas ? 'pointer' : 'default'};background:var(--surface2);border-bottom:1px solid var(--border);" onclick="${tieneHijas ? `toggleAcordeon('${groupId}','${esc(producto)}')` : ''}">
         <td style="color:var(--muted);font-size:0.8rem;font-weight:600">${colegio}</td>
         <td style="font-weight:700;font-size:0.88rem">${prenda}</td>
         <td style="text-align:center;color:var(--muted);font-size:0.8rem">${tieneHijas ? `<span style="color:var(--muted);font-size:0.72rem">${hijas.length} talla${hijas.length !== 1 ? 's' : ''}</span>` : '—'}</td>
@@ -1133,13 +1133,22 @@ function renderCatalogo() {
       const costo = parseFloat(r.COSTO) || 0;
       const skuEtq = generarSKU(colegio, prenda, talla);
       html += `
-        <tr data-group="${groupId}" style="display:none;background:rgba(15,17,23,0.55)">
-          <td style="padding-left:28px;color:var(--muted);font-size:0.75rem;border-left:3px solid var(--border)">↳</td>
+        <tr data-group="${groupId}" style="display:none;background:#f0f7ff;border-left:3px solid var(--accent);border-bottom:1px solid var(--border);">
+          <td style="padding-left:28px;color:var(--muted);font-size:0.75rem;">↳</td>
           <td style="font-size:0.82rem;color:var(--muted)">${prenda}</td>
           <td style="text-align:center;font-weight:800;color:var(--accent)">${talla}</td>
           <td style="font-weight:800;color:${costo > 0 ? 'var(--text)' : 'var(--red)'}">${costo > 0 ? `$${fmt(costo)}` : '—'}</td>
-          <td><span style="font-family:monospace;font-size:0.68rem;color:var(--muted)">${skuEtq}</span></td><td></td>
-          <td><button class="btn btn-secondary" style="padding:4px 10px;font-size:0.75rem;white-space:nowrap;border-color:rgba(240,165,0,0.4);color:var(--accent)" onclick="event.stopPropagation();abrirEtiqueta('${esc(colegio)}','${esc(prenda)}','${esc(talla)}',${costo})">🏷️ Etiqueta</button></td>
+          <td><span style="font-family:monospace;font-size:0.68rem;color:var(--muted)">${skuEtq}</span></td>
+          <td></td>
+          <td>
+            <button class="btn btn-secondary"
+                    style="padding:5px 12px;font-size:0.75rem;white-space:nowrap;
+                           border-color:rgba(240,165,0,0.6);color:#92400e;
+                           background:rgba(240,165,0,0.10);font-weight:700;"
+                    onclick="event.stopPropagation();abrirEtiqueta('${esc(colegio)}','${esc(prenda)}','${esc(talla)}',${costo})">
+              🏷️ Etiqueta
+            </button>
+          </td>
         </tr>`;
     });
   });

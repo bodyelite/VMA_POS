@@ -34,7 +34,7 @@ process.on('uncaughtException', (err) => {
 // ── Archivos mutables (van al disco persistente) ─────────────
 const MUTABLE = new Set([
     'stock.json', 'ventas.json', 'ingresos.json',
-    'ajustes_inventario.json',
+    'ajustes_inventario.json', 'clientes.csv',
     'vma_insumos.csv', 'vma_recetas.csv', 'vma_precios_matriz.csv'
 ]);
 
@@ -42,7 +42,7 @@ const dataPath = (file) =>
     MUTABLE.has(file) ? path.join(PERSIST_DIR, file) : path.join(STATIC_DIR, file);
 
 // Al arrancar: copia archivos semilla al disco persistente si no existen aún.
-['vma_precios_matriz.csv', 'vma_insumos.csv', 'vma_recetas.csv'].forEach(file => {
+['vma_precios_matriz.csv', 'vma_insumos.csv', 'vma_recetas.csv', 'clientes.csv'].forEach(file => {
     const dest = path.join(PERSIST_DIR, file);
     const src  = path.join(STATIC_DIR, file);
     if (!fs.existsSync(dest) && fs.existsSync(src)) {
@@ -103,7 +103,44 @@ const writeCSV = (file, headers, rows) =>
 app.get('/api/stock',      (req, res) => res.json(getJSON('stock.json', true)));
 app.get('/api/ingresos',   (req, res) => res.json(getJSON('ingresos.json')));
 app.get('/api/ventas',     (req, res) => res.json(getJSON('ventas.json')));
-app.get('/api/clientes',   (req, res) => res.json([]));
+// ── Clientes — lee y escribe clientes.csv ────────────────────
+app.get('/api/clientes', (req, res) => {
+    try {
+        const text = readCSV('clientes.csv');
+        if (!text) return res.json([]);
+        const { rows } = parseCSV(text);
+        res.json(rows);
+    } catch { res.json([]); }
+});
+
+app.post('/api/clientes', (req, res) => {
+    try {
+        const nuevo = req.body || {};
+        if (!nuevo.NOMBRE) return res.status(400).json({ error: 'NOMBRE requerido' });
+
+        const CLIENTES_FILE = 'clientes.csv';
+        const text = readCSV(CLIENTES_FILE);
+        let { headers, rows } = parseCSV(text);
+
+        if (!headers.length) headers = ['NOMBRE','CELULAR_ID','EMAIL','DIRECCION'];
+        // Asegurar columnas del payload
+        Object.keys(nuevo).forEach(k => { if (!headers.includes(k)) headers.push(k); });
+
+        // Actualizar si existe (por nombre o celular), insertar si no
+        const idx = rows.findIndex(r =>
+            r.NOMBRE?.toLowerCase() === nuevo.NOMBRE?.toLowerCase() ||
+            (nuevo.CELULAR_ID && r.CELULAR_ID === nuevo.CELULAR_ID)
+        );
+        if (idx >= 0) rows[idx] = { ...rows[idx], ...nuevo };
+        else rows.push(nuevo);
+
+        writeCSV(CLIENTES_FILE, headers, rows);
+        res.json({ ok: true, accion: idx >= 0 ? 'actualizado' : 'creado' });
+    } catch (err) {
+        console.error('/api/clientes POST:', err.message);
+        res.status(500).json({ error: err.message });
+    }
+});
 app.get('/api/vendedores', (req, res) => res.json([]));
 app.get('/api/precios',    (req, res) => res.json([]));
 

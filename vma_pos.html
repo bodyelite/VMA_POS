@@ -267,8 +267,40 @@ body{background:var(--bg);color:var(--tx);min-height:100vh;display:flex;
 <body>
 <div class="hdr">
     <h2 id="header-title">VMA CORE | SISTEMA</h2>
-    <div id="clock" style="font-weight:700; color:var(--t2);">00:00:00</div>
-    <a href="index.html" style="color:var(--ac);text-decoration:none;font-weight:800;font-size:14px;"><i class="fa-solid fa-arrow-left"></i> VOLVER AL MENÚ</a>
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+        <button onclick="goView('pos')"
+                style="background:none;border:1px solid var(--s2);border-radius:6px;
+                       padding:6px 12px;cursor:pointer;font-size:12px;font-weight:700;
+                       color:var(--tx);display:flex;align-items:center;gap:5px;">
+            <i class="fa-solid fa-cash-register" style="color:var(--ac);"></i> Caja
+        </button>
+        <button onclick="goView('bodega')"
+                style="background:none;border:1px solid var(--s2);border-radius:6px;
+                       padding:6px 12px;cursor:pointer;font-size:12px;font-weight:700;
+                       color:var(--tx);display:flex;align-items:center;gap:5px;">
+            <i class="fa-solid fa-box-open" style="color:var(--gr);"></i> Bodega
+        </button>
+        <button onclick="goView('ajuste')"
+                style="background:none;border:1px solid #f0a500;border-radius:6px;
+                       padding:6px 12px;cursor:pointer;font-size:12px;font-weight:700;
+                       color:#92400e;display:flex;align-items:center;gap:5px;"
+                title="Pisa el stock con la cantidad real contada">
+            <i class="fa-solid fa-clipboard-check" style="color:#f0a500;"></i> Ajuste Inv.
+        </button>
+        <button onclick="goView('reportes')"
+                style="background:none;border:1px solid var(--s2);border-radius:6px;
+                       padding:6px 12px;cursor:pointer;font-size:12px;font-weight:700;
+                       color:var(--tx);display:flex;align-items:center;gap:5px;">
+            <i class="fa-solid fa-chart-pie" style="color:var(--ac);"></i> Reportes
+        </button>
+        <a href="index.html"
+           style="color:var(--t2);text-decoration:none;font-weight:700;font-size:12px;
+                  padding:6px 10px;border:1px solid var(--s2);border-radius:6px;
+                  display:flex;align-items:center;gap:5px;">
+            <i class="fa-solid fa-arrow-left"></i> Menú
+        </a>
+    </div>
+    <div id="clock" style="font-weight:700;color:var(--t2);font-size:13px;font-family:'JetBrains Mono';">00:00:00</div>
 </div>
 
 <div id="view-pos" class="view-wrapper">
@@ -276,10 +308,13 @@ body{background:var(--bg);color:var(--tx);min-height:100vh;display:flex;
         <div class="section-card">
             <div class="grid-cl">
                 <div style="position:relative;"><label class="lbl">Cliente (Nombre o Tel)</label><input type="text" id="clInput" class="in" placeholder="Escriba para buscar..." oninput="buscarCliente(this.value)"><div id="clResultados" class="search-res" style="display:none;"></div></div>
-                <div><label class="lbl">Email</label><input type="text" id="clEmail" class="in"></div>
                 <div><label class="lbl">WhatsApp</label><input type="text" id="clWsp" class="in" placeholder="Ej: 912345678"></div>
+                <div><label class="lbl">Email</label><input type="text" id="clEmail" class="in"></div>
                 <div><label class="lbl">Dirección</label><input type="text" id="clDir" class="in"></div>
-                <button class="btn-main" style="background:var(--s2);color:var(--tx);height:36px;font-size:11px;" onclick="clAnonimo()">VENTA RÁPIDA</button>
+                <div style="display:flex;flex-direction:column;gap:6px;">
+                    <button class="btn-main" style="background:var(--s2);color:var(--tx);height:36px;font-size:11px;" onclick="clAnonimo()">VENTA RÁPIDA</button>
+                    <button class="btn-main" style="background:var(--ac);height:36px;font-size:11px;" onclick="guardarCliente()" id="btnGuardarCliente" title="Guardar o actualizar este cliente en la base de datos"><i class="fa-solid fa-user-check"></i> GUARDAR CLIENTE</button>
+                </div>
             </div>
         </div>
 
@@ -683,6 +718,36 @@ function buscarCliente(val){
 }
 function setCliente(c){ currentCl = c; document.getElementById('clInput').value = c.NOMBRE; document.getElementById('clEmail').value = c.EMAIL || ''; document.getElementById('clWsp').value = c.CELULAR_ID || c.CELLULAR_ID || ''; document.getElementById('clDir').value = c.DIRECCION || ''; document.getElementById('clResultados').style.display='none'; }
 function clAnonimo(){ currentCl = { NOMBRE: 'CLIENTE MOSTRADOR', CELULAR_ID: '' }; document.getElementById('clInput').value = "CLIENTE MOSTRADOR"; document.getElementById('clEmail').value = "N/A"; document.getElementById('clWsp').value = ""; document.getElementById('clDir').value = "N/A"; }
+
+async function guardarCliente(){
+    const nombre = document.getElementById('clInput').value.trim();
+    const wsp    = document.getElementById('clWsp').value.trim();
+    const email  = document.getElementById('clEmail').value.trim();
+    const dir    = document.getElementById('clDir').value.trim();
+    if(!nombre) return alert('Ingrese al menos el nombre del cliente.');
+    const btn = document.getElementById('btnGuardarCliente');
+    btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Guardando...';
+    try {
+        const payload = { NOMBRE: nombre, CELULAR_ID: wsp, EMAIL: email, DIRECCION: dir };
+        const res = await fetch('/api/clientes', {
+            method: 'POST', headers: {'Content-Type':'application/json'},
+            body: JSON.stringify(payload)
+        });
+        if(!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        // Actualizar lista local
+        const idx = clientes.findIndex(c => c.NOMBRE.toLowerCase() === nombre.toLowerCase() || (wsp && (c.CELULAR_ID||c.CELLULAR_ID) === wsp));
+        if(idx >= 0) clientes[idx] = {...clientes[idx], ...payload};
+        else clientes.push(payload);
+        currentCl = payload;
+        btn.innerHTML = '<i class="fa-solid fa-check"></i> GUARDADO';
+        btn.style.background = 'var(--gr)';
+        setTimeout(()=>{ btn.innerHTML='<i class="fa-solid fa-user-check"></i> GUARDAR CLIENTE'; btn.style.background='var(--ac)'; btn.disabled=false; }, 2000);
+    } catch(e) {
+        alert(`Error guardando cliente: ${e.message}`);
+        btn.disabled=false; btn.innerHTML='<i class="fa-solid fa-user-check"></i> GUARDAR CLIENTE';
+    }
+}
 function filtrarPrendas(){
     const col = document.getElementById('sCol').value, lista = document.getElementById('listaPrendas');
     const prendas = [...new Set(articulos.filter(a=>a.col===col).map(a=>a.pre))].sort();
@@ -707,9 +772,22 @@ function setVentaItem(talla, precio, el, costo=0){
 }
 function agregarAlCarro(){
     const col = document.getElementById('sCol').value, qty = parseInt(document.getElementById('vQty').value);
+    if(!col || !selProd || !selTalla || qty < 1) return;
     const item = articulos.find(a=>a.col===col && a.pre===selProd && a.talla===selTalla);
-    carritos.push({col, pre:selProd, talla:selTalla, qty, precio:item.precio, costo:item.costo||selCosto||0}); renderCarro();
-    document.getElementById('controlQty').style.display='none'; document.querySelectorAll('.btn-t').forEach(b=>b.classList.remove('active')); document.getElementById('vQty').value = 1;
+    if(!item) return;
+    // Buscar si ya hay un ítem igual en el carrito y sumar
+    const existe = carritos.find(c=>c.col===col && c.pre===selProd && c.talla===selTalla);
+    if(existe) { existe.qty += qty; } else { carritos.push({col, pre:selProd, talla:selTalla, qty, precio:item.precio, costo:item.costo||selCosto||0}); }
+    renderCarro();
+    // Flujo continuo: limpiar qty y des-seleccionar talla, pero MANTENER las tallas visibles
+    document.getElementById('controlQty').style.display='none';
+    document.getElementById('vQty').value = 1;
+    document.querySelectorAll('.btn-t').forEach(b=>b.classList.remove('active'));
+    selTalla = null;
+    // Feedback visual breve en el botón de la prenda activa
+    const btnPrend = document.querySelector('.p-btn.active');
+    if(btnPrend){ const orig = btnPrend.textContent; btnPrend.textContent = '✓ Añadido'; btnPrend.style.background='var(--gr)'; btnPrend.style.color='#fff'; setTimeout(()=>{ btnPrend.textContent=orig; btnPrend.style.background=''; btnPrend.style.color=''; }, 900); }
+    // Foco al escáner para siguiente ítem
     document.getElementById('bcInput').focus();
 }
 function renderCarro(){
